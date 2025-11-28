@@ -1,3 +1,6 @@
+
+-148
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -373,6 +376,44 @@
       color: var(--muted);
     }
 
+    .task-time {
+      font-size: 9px;
+      color: var(--accent-2);
+      background: rgba(255, 207, 88, 0.12);
+      border: 1px solid rgba(255, 207, 88, 0.25);
+      border-radius: 6px;
+      padding: 2px 6px;
+    }
+
+    .deck-map {
+      display: grid;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    .deck-chip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 6px 8px;
+      gap: 8px;
+    }
+
+    .deck-chip .meta {
+      display: flex;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .importance-critical { color: #ff9aa2; }
+    .importance-supporting { color: #9ae6b4; }
+    .importance-niceToHave { color: #a5b4fc; }
+
     .story {
       display: grid;
       gap: 8px;
@@ -546,6 +587,12 @@
         </div>
 
         <div class="panel">
+          <h3>Deck Map</h3>
+          <div class="deck-map" id="deck-map"></div>
+          <div class="hint">Critical = pink, Supporting = green, Nice-to-have = violet. Group pink gauges in the Focus Zone.</div>
+        </div>
+
+        <div class="panel">
           <h3>Active Tasks</h3>
           <ul class="task-list" id="task-list">
             <li><span>Tasks will appear once you start.</span><span class="tag">Pending</span></li>
@@ -578,6 +625,7 @@
     const fatigueBar = document.getElementById('fatigue-bar');
     const missionProgress = document.getElementById('mission-progress');
     const summaryList = document.getElementById('summary-list');
+    const deckMapEl = document.getElementById('deck-map');
 
     const quizOverlay = document.getElementById('quiz');
     const quizQuestion = document.getElementById('quiz-question');
@@ -736,6 +784,7 @@
       levelIndex: 1,
       questionTimer: null,
       taskTimer: null,
+      taskTickTimer: null,
       alertTimer: null,
       fatigueTimer: null,
       sa_score: 65,
@@ -922,9 +971,32 @@
       }
       state.tasks.forEach((task) => {
         const li = document.createElement('li');
-        li.innerHTML = `<span>${task.description}</span><span class="tag">${task.type}</span>`;
+        const remaining = Math.max(0, Math.ceil((task.expiresAt - Date.now()) / 1000));
+        const timeTag = `<span class="task-time">${remaining}s</span>`;
+        li.innerHTML = `<span>${task.description}</span><span class="tag">${task.type}</span>${timeTag}`;
         list.appendChild(li);
       });
+    }
+
+    function renderDeckMap() {
+      if (!deckMapEl) return;
+      deckMapEl.innerHTML = '';
+      const level = LevelDesign[state.levelIndex] || LevelDesign[1];
+      level.ids.forEach((id) => {
+        const inst = instruments.find((i) => i.id === id);
+        if (!inst) return;
+        const row = document.createElement('div');
+        row.className = 'deck-chip';
+        row.innerHTML = `
+          <span>${inst.icon} ${inst.kidName}</span>
+          <span class="meta">
+            <span class="importance-${inst.importance}">${inst.importance}</span>
+            <span>${inst.group}</span>
+          </span>
+        `;
+        deckMapEl.appendChild(row);
+      });
+      if (!deckMapEl.children.length) deckMapEl.textContent = 'No gauges in this level yet.';
     }
 
     function addTask(task) {
@@ -940,6 +1012,26 @@
       state.mission_progress = Math.min(1, state.mission_progress + 0.03);
       renderTasks();
       renderMeters();
+    }
+
+    function failTask(task) {
+      state.tasks = state.tasks.filter((t) => t.id !== task.id);
+      state.sa_score = Math.max(0, state.sa_score - 4);
+      state.clutter_level = Math.min(100, state.clutter_level + 6);
+      state.fatigue = Math.min(100, state.fatigue + 4);
+      state.mission_progress = Math.max(0, state.mission_progress - 0.02);
+      log(`Missed task: ${task.description}`);
+      renderTasks();
+      renderMeters();
+      updateSummary();
+    }
+
+    function tickTasks() {
+      const now = Date.now();
+      const expired = state.tasks.filter((t) => t.expiresAt <= now);
+      expired.forEach((task) => failTask(task));
+      if (expired.length) renderTasks();
+      else renderTasks();
     }
 
     function checkTasks() {
@@ -1037,6 +1129,7 @@
         id: `${choice}-${Date.now()}`,
         instId: choice,
         type,
+        expiresAt: Date.now() + (type === 'focus' ? 15000 : 12000),
         description: type === 'focus' ? `Group ${inst.kidName} inside the Focus Zone.` : `Tap ${inst.kidName} to confirm it's healthy.`,
       };
       addTask(task);
@@ -1052,6 +1145,7 @@
       state.fatigueTimer = setInterval(tickFatigue, 1800);
       state.questionTimer = setInterval(askSAQuestion, 12000);
       state.taskTimer = setInterval(spawnTask, 5200);
+      state.taskTickTimer = setInterval(tickTasks, 1000);
     }
 
     function stopSimulation() {
@@ -1060,7 +1154,8 @@
       clearInterval(state.fatigueTimer);
       clearInterval(state.questionTimer);
       clearInterval(state.taskTimer);
-      state.alertTimer = state.fatigueTimer = state.questionTimer = state.taskTimer = null;
+      clearInterval(state.taskTickTimer);
+      state.alertTimer = state.fatigueTimer = state.questionTimer = state.taskTimer = state.taskTickTimer = null;
       log('Simulation paused.');
     }
 
@@ -1151,6 +1246,7 @@
         if (inst) createInstrument(inst);
       });
       updateClutterAndGrouping();
+      renderDeckMap();
       log(`Loaded ${level.name}.`);
     }
 
