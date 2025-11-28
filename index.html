@@ -345,6 +345,34 @@
       line-height: 1.5;
     }
 
+    .task-list {
+      margin: 0;
+      padding-left: 16px;
+      color: var(--text);
+      font-size: 11px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .task-list li {
+      background: rgba(76, 179, 255, 0.08);
+      border: 1px solid rgba(76, 179, 255, 0.15);
+      border-radius: 8px;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .task-list .tag {
+      font-size: 9px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      padding: 2px 6px;
+      color: var(--muted);
+    }
+
     .story {
       display: grid;
       gap: 8px;
@@ -506,6 +534,25 @@
         </div>
 
         <div class="panel">
+          <h3>Training Level</h3>
+          <div class="controls">
+            <button id="level-1">Level 1</button>
+            <button id="level-2" class="secondary">Level 2</button>
+            <button id="level-3" class="secondary">Level 3</button>
+            <button id="level-4" class="secondary">Level 4</button>
+            <button id="level-5" class="secondary">Level 5</button>
+          </div>
+          <div class="hint">Higher levels add checklists, engine health, flaps/trim, and extra alerts. Keep it tidy.</div>
+        </div>
+
+        <div class="panel">
+          <h3>Active Tasks</h3>
+          <ul class="task-list" id="task-list">
+            <li><span>Tasks will appear once you start.</span><span class="tag">Pending</span></li>
+          </ul>
+        </div>
+
+        <div class="panel">
           <h3>End-of-Round Notes</h3>
           <ul class="notes-list" id="summary-list">
             <li>Keep critical gauges tight.</li>
@@ -553,9 +600,10 @@
     const LevelDesign = [
       { name: 'Tutorial', ids: ['airspeed', 'altimeter'] },
       { name: 'Level 1 — Speed & Height', ids: ['airspeed', 'altimeter'] },
-      { name: 'Level 2 — Add Direction', ids: ['airspeed', 'altimeter', 'heading'] },
-      { name: 'Level 3 — Warnings', ids: ['airspeed', 'altimeter', 'heading', 'warning'] },
-      { name: 'Level 4 — Weather & Radios', ids: ['airspeed', 'altimeter', 'heading', 'warning', 'weather', 'radio'] },
+      { name: 'Level 2 — Add Direction', ids: ['airspeed', 'altimeter', 'heading', 'trim'] },
+      { name: 'Level 3 — Warnings & Engines', ids: ['airspeed', 'altimeter', 'heading', 'warning', 'engine', 'flaps'] },
+      { name: 'Level 4 — Weather & Radios', ids: ['airspeed', 'altimeter', 'heading', 'warning', 'weather', 'radio', 'fuel'] },
+      { name: 'Level 5 — Full Deck', ids: ['airspeed', 'altimeter', 'heading', 'warning', 'weather', 'radio', 'fuel', 'cabin', 'checklist', 'engine', 'flaps', 'trim'] },
     ];
 
     const instruments = [
@@ -590,6 +638,16 @@
         note: 'Compass direction. Keep it steady.',
       },
       {
+        id: 'trim',
+        techName: 'Trim',
+        kidName: 'Trim',
+        icon: '⚙️',
+        importance: 'supporting',
+        group: 'flight',
+        readout: 'Neutral',
+        note: 'Fine tune to keep the plane level.',
+      },
+      {
         id: 'weather',
         techName: 'Weather Radar',
         kidName: 'Weather',
@@ -620,6 +678,16 @@
         note: 'Check temps & fuel flow.',
       },
       {
+        id: 'flaps',
+        techName: 'Flaps',
+        kidName: 'Flaps',
+        icon: '🪽',
+        importance: 'supporting',
+        group: 'flight',
+        readout: '15°',
+        note: 'Use for takeoff/landing. Reset when safe.',
+      },
+      {
         id: 'warning',
         techName: 'Caution Lights',
         kidName: 'Warnings',
@@ -628,6 +696,26 @@
         group: 'warning',
         readout: 'No alerts',
         note: 'Flashes red when something is wrong.',
+      },
+      {
+        id: 'fuel',
+        techName: 'Fuel Monitor',
+        kidName: 'Fuel',
+        icon: '⛽️',
+        importance: 'supporting',
+        group: 'warning',
+        readout: '68% left',
+        note: 'Keep above 40% for safety.',
+      },
+      {
+        id: 'cabin',
+        techName: 'Cabin Pressure',
+        kidName: 'Cabin',
+        icon: '🫧',
+        importance: 'supporting',
+        group: 'warning',
+        readout: 'Stable',
+        note: 'Watch passengers comfort level.',
       },
       {
         id: 'checklist',
@@ -647,6 +735,7 @@
       tutorialStep: TutorialStep.Intro,
       levelIndex: 1,
       questionTimer: null,
+      taskTimer: null,
       alertTimer: null,
       fatigueTimer: null,
       sa_score: 65,
@@ -659,6 +748,7 @@
       correct_rejections: 0,
       layout: {},
       elements: {},
+      tasks: [],
     };
 
     function log(message, highlight) {
@@ -713,6 +803,11 @@
         if (state.activeAlert && state.activeAlert.id === inst.id) {
           resolveAlert(inst.id, 'Acknowledged');
         }
+        const pending = state.tasks.find((t) => t.instId === inst.id && t.type === 'check');
+        if (pending) {
+          completeTask(pending.id, 6);
+          log(`Checked ${inst.kidName}.`, true);
+        }
       });
 
       instrumentArea.appendChild(el);
@@ -763,6 +858,7 @@
       const inside = isInsideFocus(el);
       el.classList.toggle('focused', inside);
       el.dataset.inFocus = inside;
+      checkTasks();
     }
 
     function averagePairwiseDistance(nodes) {
@@ -813,6 +909,48 @@
       clutterBar.style.width = `${state.clutter_level}%`;
       fatigueBar.style.width = `${state.fatigue}%`;
       missionProgress.style.width = `${state.mission_progress * 100}%`;
+    }
+
+    function renderTasks() {
+      const list = document.getElementById('task-list');
+      list.innerHTML = '';
+      if (!state.tasks.length) {
+        const li = document.createElement('li');
+        li.innerHTML = '<span>No active tasks.</span><span class="tag">Clear</span>';
+        list.appendChild(li);
+        return;
+      }
+      state.tasks.forEach((task) => {
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${task.description}</span><span class="tag">${task.type}</span>`;
+        list.appendChild(li);
+      });
+    }
+
+    function addTask(task) {
+      state.tasks.push(task);
+      log(`New task: ${task.description}`);
+      renderTasks();
+    }
+
+    function completeTask(taskId, boost = 4) {
+      state.tasks = state.tasks.filter((t) => t.id !== taskId);
+      state.sa_score = Math.min(100, state.sa_score + boost);
+      state.fatigue = Math.max(0, state.fatigue - boost / 2);
+      state.mission_progress = Math.min(1, state.mission_progress + 0.03);
+      renderTasks();
+      renderMeters();
+    }
+
+    function checkTasks() {
+      state.tasks.forEach((task) => {
+        const el = state.elements[task.instId];
+        if (!el) return;
+        if (task.type === 'focus' && el.dataset.inFocus === 'true') {
+          completeTask(task.id);
+          log(`Task complete: ${task.description}`, true);
+        }
+      });
     }
 
     function triggerAlert() {
@@ -887,6 +1025,25 @@
       renderMeters();
     }
 
+    function spawnTask() {
+      if (!state.running) return;
+      if (state.tasks.length > 3) return;
+      const activeIds = activeInstrumentIds();
+      const choice = activeIds[Math.floor(Math.random() * activeIds.length)];
+      if (!choice) return;
+      const inst = instruments.find((i) => i.id === choice);
+      const type = Math.random() > 0.4 ? 'focus' : 'check';
+      const task = {
+        id: `${choice}-${Date.now()}`,
+        instId: choice,
+        type,
+        description: type === 'focus' ? `Group ${inst.kidName} inside the Focus Zone.` : `Tap ${inst.kidName} to confirm it's healthy.`,
+      };
+      addTask(task);
+      renderTasks();
+      checkTasks();
+    }
+
     function startSimulation() {
       if (state.running) return;
       state.running = true;
@@ -894,6 +1051,7 @@
       state.alertTimer = setInterval(triggerAlert, 3600);
       state.fatigueTimer = setInterval(tickFatigue, 1800);
       state.questionTimer = setInterval(askSAQuestion, 12000);
+      state.taskTimer = setInterval(spawnTask, 5200);
     }
 
     function stopSimulation() {
@@ -901,7 +1059,8 @@
       clearInterval(state.alertTimer);
       clearInterval(state.fatigueTimer);
       clearInterval(state.questionTimer);
-      state.alertTimer = state.fatigueTimer = state.questionTimer = null;
+      clearInterval(state.taskTimer);
+      state.alertTimer = state.fatigueTimer = state.questionTimer = state.taskTimer = null;
       log('Simulation paused.');
     }
 
@@ -985,6 +1144,8 @@
       state.layout = {};
       state.elements = {};
       const level = LevelDesign[levelIndex];
+      state.tasks = [];
+      renderTasks();
       level.ids.forEach((id) => {
         const inst = instruments.find((i) => i.id === id);
         if (inst) createInstrument(inst);
@@ -1024,9 +1185,15 @@
       document.getElementById('shuffle-btn').addEventListener('click', shuffleClutter);
       document.getElementById('reset-btn').addEventListener('click', resetLayout);
       document.getElementById('tutorial-btn').addEventListener('click', startTutorial);
+      document.getElementById('level-1').addEventListener('click', () => loadLevel(1));
+      document.getElementById('level-2').addEventListener('click', () => loadLevel(2));
+      document.getElementById('level-3').addEventListener('click', () => loadLevel(3));
+      document.getElementById('level-4').addEventListener('click', () => loadLevel(4));
+      document.getElementById('level-5').addEventListener('click', () => loadLevel(5));
       tutorialNext.addEventListener('click', nextTutorial);
       renderMeters();
       updateSummary();
+      renderTasks();
     }
 
     init();
