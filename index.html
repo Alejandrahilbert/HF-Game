@@ -7,16 +7,15 @@
   <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
   <style>
     :root {
-      --ink: #0c0c1c;
-      --panel: #11162b;
-      --panel-2: #161b35;
+      --ink: #0b0f20;
+      --panel: #10162e;
+      --panel-2: #141c36;
       --accent: #6ef3c5;
       --accent-2: #ffcf58;
       --alert: #ff6b6b;
-      --grid: rgba(255, 255, 255, 0.06);
-      --text: #f5f8ff;
-      --muted: #8fa4c2;
       --focus: #4cb3ff;
+      --text: #f5f8ff;
+      --muted: #9db1d1;
       --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
       --radius: 14px;
       --pixel: "Press Start 2P", "VT323", "Courier New", monospace;
@@ -31,7 +30,7 @@
         radial-gradient(circle at 80% 0%, #1d2348, #0b0f20 55%);
       color: var(--text);
       font-family: var(--pixel);
-      letter-spacing: 0.4px;
+      letter-spacing: 0.35px;
     }
 
     h1, h2, h3 { margin: 0; }
@@ -39,7 +38,7 @@
     .frame {
       max-width: 1280px;
       margin: 0 auto;
-      padding: 20px 18px 28px;
+      padding: 20px 18px 32px;
     }
 
     .top-bar {
@@ -49,7 +48,7 @@
       border-radius: var(--radius);
       padding: 18px 18px 14px;
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
     .top-bar .title {
@@ -83,6 +82,7 @@
 
     @media (max-width: 900px) {
       .layout { grid-template-columns: 1fr; }
+      .cockpit { min-height: 520px; }
     }
 
     .cockpit {
@@ -100,8 +100,8 @@
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(var(--grid) 1px, transparent 1px),
-        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
       background-size: 40px 40px;
       pointer-events: none;
       opacity: 0.6;
@@ -115,6 +115,7 @@
       z-index: 2;
       margin-bottom: 12px;
       gap: 10px;
+      flex-wrap: wrap;
     }
 
     .cockpit-header h2 { font-size: 16px; }
@@ -124,6 +125,26 @@
       font-size: 11px;
       line-height: 1.4;
     }
+
+    .rules {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    .rule-chip {
+      background: rgba(76, 179, 255, 0.14);
+      border: 1px solid rgba(76, 179, 255, 0.25);
+      padding: 8px 10px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rule-chip strong { color: var(--accent-2); }
 
     .instrument-area {
       position: relative;
@@ -138,21 +159,22 @@
     .instrument {
       position: absolute;
       width: 170px;
-      min-height: 118px;
+      min-height: 120px;
       background: var(--panel);
       border: 2px solid #2b345d;
       border-radius: 10px;
       padding: 10px;
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.32);
       cursor: grab;
-      transition: transform 0.08s ease, border 0.1s ease, box-shadow 0.08s ease;
+      transition: transform 0.08s ease, border 0.1s ease, box-shadow 0.08s ease, background 0.08s ease;
       user-select: none;
+      color: var(--text);
     }
 
     .instrument:active { cursor: grabbing; }
 
     .instrument h3 {
-      font-size: 12px;
+      font-size: 13px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -167,9 +189,16 @@
       color: var(--muted);
     }
 
+    .instrument .kid-label {
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     .instrument .readout {
-      font-size: 24px;
-      margin: 10px 0 6px;
+      font-size: 22px;
+      margin: 8px 0 4px;
       color: var(--accent-2);
       text-shadow: 0 0 6px rgba(255, 207, 88, 0.4);
     }
@@ -180,16 +209,10 @@
       line-height: 1.5;
     }
 
-    .instrument.alert {
-      border-color: var(--alert);
-      box-shadow: 0 0 14px rgba(255, 107, 107, 0.6);
-      animation: pulse 0.6s infinite;
-    }
-
-    .instrument.focused {
-      border-color: var(--focus);
-      box-shadow: 0 0 14px rgba(76, 179, 255, 0.7);
-    }
+    .instrument.safe { border-color: #2e9b6f; box-shadow: 0 0 10px rgba(46, 155, 111, 0.35); }
+    .instrument.watch { border-color: #ffcf58; box-shadow: 0 0 12px rgba(255, 207, 88, 0.45); background: #1b1f36; }
+    .instrument.alert { border-color: var(--alert); box-shadow: 0 0 14px rgba(255, 107, 107, 0.6); animation: pulse 0.6s infinite; background: #1e1323; }
+    .instrument.focused { outline: 2px dashed var(--focus); }
 
     @keyframes pulse {
       0%, 100% { transform: translateY(0); }
@@ -321,6 +344,86 @@
       border: 1px dashed rgba(255, 255, 255, 0.12);
       line-height: 1.5;
     }
+
+    .story {
+      display: grid;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .progress-bar {
+      position: relative;
+      width: 100%;
+      height: 12px;
+      background: #0f1834;
+      border: 1px solid #23305c;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar .fill {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, #a5f3fc, #4cb3ff);
+      width: 10%;
+      transition: width 0.4s ease;
+    }
+
+    .sa-quiz {
+      position: absolute;
+      inset: 0;
+      background: rgba(6, 10, 22, 0.9);
+      color: var(--text);
+      display: none;
+      place-items: center;
+      z-index: 4;
+    }
+
+    .quiz-card {
+      background: #101733;
+      border: 2px solid #2b7bb3;
+      border-radius: 14px;
+      padding: 18px;
+      width: min(480px, 92vw);
+      display: grid;
+      gap: 12px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+
+    .quiz-card h3 { font-size: 15px; }
+
+    .quiz-options { display: grid; gap: 8px; }
+
+    .quiz-options button { width: 100%; }
+
+    .tutorial-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(9, 12, 24, 0.88);
+      color: var(--text);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      text-align: center;
+      padding: 18px;
+    }
+
+    .tutorial-card {
+      background: #131a35;
+      border: 2px solid #2b7bb3;
+      border-radius: 14px;
+      padding: 18px;
+      width: min(520px, 94vw);
+      display: grid;
+      gap: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .tutorial-card h3 { font-size: 16px; }
+    .tutorial-card p { font-size: 12px; line-height: 1.6; color: var(--muted); }
   </style>
 </head>
 <body>
@@ -332,7 +435,7 @@
       </div>
       <div class="subtitle">
         Drag and drop instruments, respond to alerts, and test whether a tidier cockpit helps you fly smoother.
-        This mini-game is built for middle school pilots to explore human factors: clutter, attention, and smart layout choices.
+        Built for middle school pilots to explore clutter, attention, and smart layout choices.
       </div>
     </header>
 
@@ -341,12 +444,29 @@
         <div class="cockpit-header">
           <div>
             <h2>Flight Deck Sandbox</h2>
-            <div class="cockpit-hint">Move critical gauges closer together. Tap flashing panels fast to keep your crew score high.</div>
+            <div class="cockpit-hint">Move critical gauges into the Focus Zone. Tap flashing red panels fast.</div>
           </div>
-          <div class="cockpit-hint">Tip: Cluster altitude, attitude, and airspeed inside the focus zone.</div>
+          <div class="rules">
+            <div class="rule-chip"><strong>1.</strong> Keep Speed, Height, Direction together.</div>
+            <div class="rule-chip"><strong>2.</strong> Click anything that flashes red.</div>
+          </div>
         </div>
         <div class="instrument-area" id="instrument-area"></div>
         <div class="focus-zone" id="focus-zone">Focus Zone — tighter grouping = faster reactions</div>
+        <div class="tutorial-overlay" id="tutorial">
+          <div class="tutorial-card" id="tutorial-card">
+            <h3>Flight School</h3>
+            <p id="tutorial-text">Welcome pilot! Let's make this cockpit kid-friendly.</p>
+            <button id="tutorial-next">Next</button>
+          </div>
+        </div>
+        <div class="sa-quiz" id="quiz">
+          <div class="quiz-card">
+            <h3 id="quiz-title">Quick Check</h3>
+            <p id="quiz-question">What is your speed?</p>
+            <div class="quiz-options" id="quiz-options"></div>
+          </div>
+        </div>
       </section>
 
       <aside class="control-panel">
@@ -366,26 +486,31 @@
               <div class="meter-bar"><div class="fill alert" id="fatigue-bar"></div></div>
             </div>
           </div>
+          <div class="story">
+            <div><strong>Mission:</strong> Deliver medical supplies safely.</div>
+            <div class="progress-bar"><div class="fill" id="mission-progress"></div></div>
+            <div>Catch alerts to keep passengers calm.</div>
+          </div>
         </div>
 
         <div class="panel">
           <h3>Controls</h3>
           <div class="controls">
-            <button id="start-btn">Start Simulation</button>
+            <button id="start-btn">Start</button>
             <button id="stop-btn" class="secondary">Pause</button>
             <button id="shuffle-btn" class="secondary">Shuffle Clutter</button>
             <button id="reset-btn">Reset Layout</button>
+            <button id="tutorial-btn">Flight School</button>
           </div>
-          <div class="hint">When alerts flash red, click that instrument quickly. Try flying once with clutter, then once after organizing.</div>
+          <div class="hint">Try Level 1 with only Speed and Height. Then level up to add Direction, Warnings, and Weather.</div>
         </div>
 
         <div class="panel">
-          <h3>Design Notebook</h3>
-          <ul class="notes-list">
-            <li>Which gauges belong closest together?</li>
-            <li>How many clicks did clutter cost you?</li>
-            <li>Write a rule that would help a real pilot.</li>
-            <li>Sketch your best cockpit on paper after each round.</li>
+          <h3>End-of-Round Notes</h3>
+          <ul class="notes-list" id="summary-list">
+            <li>Keep critical gauges tight.</li>
+            <li>Tap red alerts fast.</li>
+            <li>Watch false alarms.</li>
           </ul>
         </div>
 
@@ -404,25 +529,136 @@
     const awarenessBar = document.getElementById('awareness-bar');
     const clutterBar = document.getElementById('clutter-bar');
     const fatigueBar = document.getElementById('fatigue-bar');
+    const missionProgress = document.getElementById('mission-progress');
+    const summaryList = document.getElementById('summary-list');
+
+    const quizOverlay = document.getElementById('quiz');
+    const quizQuestion = document.getElementById('quiz-question');
+    const quizOptions = document.getElementById('quiz-options');
+    const quizTitle = document.getElementById('quiz-title');
+
+    const tutorialOverlay = document.getElementById('tutorial');
+    const tutorialText = document.getElementById('tutorial-text');
+    const tutorialNext = document.getElementById('tutorial-next');
+
+    const TutorialStep = {
+      Intro: 0,
+      ExplainSpeed: 1,
+      ExplainHeight: 2,
+      ExplainFocus: 3,
+      FirstAlert: 4,
+      Done: 5,
+    };
+
+    const LevelDesign = [
+      { name: 'Tutorial', ids: ['airspeed', 'altimeter'] },
+      { name: 'Level 1 — Speed & Height', ids: ['airspeed', 'altimeter'] },
+      { name: 'Level 2 — Add Direction', ids: ['airspeed', 'altimeter', 'heading'] },
+      { name: 'Level 3 — Warnings', ids: ['airspeed', 'altimeter', 'heading', 'warning'] },
+      { name: 'Level 4 — Weather & Radios', ids: ['airspeed', 'altimeter', 'heading', 'warning', 'weather', 'radio'] },
+    ];
 
     const instruments = [
-      { id: 'altimeter', label: 'Altimeter', readout: '12,300 ft', note: 'Altitude & pressure monitor.' },
-      { id: 'attitude', label: 'Attitude', readout: 'Level — 2° up', note: 'Artificial horizon.' },
-      { id: 'airspeed', label: 'Airspeed', readout: '245 kts', note: 'Pitch for speed before power.' },
-      { id: 'heading', label: 'Heading', readout: '095°', note: 'Stay on course or drift east.' },
-      { id: 'engine', label: 'Engine', readout: '92% thrust', note: 'Check temps & fuel flow.' },
-      { id: 'radar', label: 'Weather Radar', readout: 'Cells NE', note: 'Storms clutter the map.' },
-      { id: 'nav', label: 'Nav Radios', readout: 'VOR 114.3', note: 'Needle centers when tuned.' },
-      { id: 'checklist', label: 'Checklist', readout: 'Approach', note: 'Tap to verify steps.' },
-      { id: 'alert', label: 'Caution Lights', readout: 'No alerts', note: 'Blink = scan & respond.' }
+      {
+        id: 'airspeed',
+        techName: 'Airspeed',
+        kidName: 'Speed',
+        icon: '🚀',
+        importance: 'critical',
+        group: 'flight',
+        readout: '245 kts',
+        note: 'Speed in the green keeps us happy.',
+      },
+      {
+        id: 'altimeter',
+        techName: 'Altimeter',
+        kidName: 'Height',
+        icon: '🧭',
+        importance: 'critical',
+        group: 'flight',
+        readout: '12,300 ft',
+        note: 'How high we are above Earth.',
+      },
+      {
+        id: 'heading',
+        techName: 'Heading',
+        kidName: 'Direction',
+        icon: '🧭',
+        importance: 'critical',
+        group: 'navigation',
+        readout: '095°',
+        note: 'Compass direction. Keep it steady.',
+      },
+      {
+        id: 'weather',
+        techName: 'Weather Radar',
+        kidName: 'Weather',
+        icon: '⛅️',
+        importance: 'supporting',
+        group: 'weather',
+        readout: 'Storms NE',
+        note: 'Watch for storms and lightning.',
+      },
+      {
+        id: 'radio',
+        techName: 'Nav Radios',
+        kidName: 'Radio',
+        icon: '📡',
+        importance: 'supporting',
+        group: 'navigation',
+        readout: 'VOR 114.3',
+        note: 'Tune towers to stay on route.',
+      },
+      {
+        id: 'engine',
+        techName: 'Engine',
+        kidName: 'Engines',
+        icon: '🛠️',
+        importance: 'supporting',
+        group: 'warning',
+        readout: '92% thrust',
+        note: 'Check temps & fuel flow.',
+      },
+      {
+        id: 'warning',
+        techName: 'Caution Lights',
+        kidName: 'Warnings',
+        icon: '⚠️',
+        importance: 'critical',
+        group: 'warning',
+        readout: 'No alerts',
+        note: 'Flashes red when something is wrong.',
+      },
+      {
+        id: 'checklist',
+        techName: 'Checklist',
+        kidName: 'Checklist',
+        icon: '📋',
+        importance: 'niceToHave',
+        group: 'checklist',
+        readout: 'Approach',
+        note: 'Tap to verify steps.',
+      },
     ];
 
     const state = {
       running: false,
       activeAlert: null,
-      metrics: { awareness: 65, clutter: 65, fatigue: 20 },
+      tutorialStep: TutorialStep.Intro,
+      levelIndex: 1,
+      questionTimer: null,
+      alertTimer: null,
+      fatigueTimer: null,
+      sa_score: 65,
+      clutter_level: 65,
+      fatigue: 20,
+      mission_progress: 0,
+      hits: 0,
+      misses: 0,
+      false_alarms: 0,
+      correct_rejections: 0,
       layout: {},
-      timers: { events: null, fatigue: null },
+      elements: {},
     };
 
     function log(message, highlight) {
@@ -430,7 +666,7 @@
       entry.className = 'log-entry';
       entry.innerHTML = highlight ? `<strong>${message}</strong>` : message;
       logEl.prepend(entry);
-      while (logEl.children.length > 20) logEl.removeChild(logEl.lastChild);
+      while (logEl.children.length > 30) logEl.removeChild(logEl.lastChild);
     }
 
     function randomPosition() {
@@ -445,11 +681,12 @@
 
     function createInstrument(inst) {
       const el = document.createElement('div');
-      el.className = 'instrument';
+      el.className = 'instrument safe';
       el.draggable = true;
       el.dataset.id = inst.id;
       el.innerHTML = `
-        <h3>${inst.label} <span>drag</span></h3>
+        <h3><span>${inst.kidName}</span><span>${inst.techName}</span></h3>
+        <div class="kid-label">${inst.icon} ${inst.kidName}</div>
         <div class="readout">${inst.readout}</div>
         <div class="notes">${inst.note}</div>
       `;
@@ -469,7 +706,7 @@
         const newY = Math.min(Math.max(e.clientY - areaRect.top - offsetY, 4), areaRect.height - el.offsetHeight - 4);
         setPosition(el, { x: newX, y: newY });
         updateFocusFlag(el);
-        scoreClutter();
+        updateClutterAndGrouping();
       });
 
       el.addEventListener('click', () => {
@@ -482,6 +719,8 @@
       const pos = randomPosition();
       setPosition(el, pos);
       state.layout[inst.id] = pos;
+      state.elements[inst.id] = el;
+      updateFocusFlag(el);
     }
 
     function setPosition(el, pos) {
@@ -496,7 +735,7 @@
         setPosition(el, pos);
         el.classList.remove('focused');
       });
-      scoreClutter();
+      updateClutterAndGrouping();
       log('Layout reset — start testing new ideas!');
     }
 
@@ -505,7 +744,7 @@
         const pos = randomPosition();
         setPosition(el, pos);
       });
-      scoreClutter();
+      updateClutterAndGrouping();
       log('We scattered the gauges. Try organizing them.');
     }
 
@@ -523,66 +762,128 @@
     function updateFocusFlag(el) {
       const inside = isInsideFocus(el);
       el.classList.toggle('focused', inside);
+      el.dataset.inFocus = inside;
     }
 
-    function scoreClutter() {
-      const all = Array.from(document.querySelectorAll('.instrument'));
-      const focused = all.filter(isInsideFocus);
-      const focusScore = Math.min(100, 45 + focused.length * 8);
-      const clutterScore = Math.max(20, 90 - focused.length * 10 - all.length);
-      const fatigueScore = Math.min(100, state.metrics.fatigue + (all.length - focused.length));
+    function averagePairwiseDistance(nodes) {
+      if (nodes.length < 2) return 0;
+      let total = 0;
+      let count = 0;
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = state.layout[nodes[i].dataset.id];
+          const b = state.layout[nodes[j].dataset.id];
+          if (a && b) {
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            total += Math.sqrt(dx * dx + dy * dy);
+            count++;
+          }
+        }
+      }
+      return count ? total / count : 0;
+    }
 
-      state.metrics.awareness = focusScore;
-      state.metrics.clutter = clutterScore;
-      state.metrics.fatigue = fatigueScore;
+    function normalize(value) {
+      return Math.max(0, Math.min(100, value));
+    }
+
+    function updateClutterAndGrouping() {
+      const all = Array.from(document.querySelectorAll('.instrument'));
+      const critical = all.filter((el) => {
+        const inst = instruments.find((i) => i.id === el.dataset.id);
+        return inst && inst.importance === 'critical';
+      });
+      const avgDistance = averagePairwiseDistance(critical);
+      const countScore = all.length * 0.4;
+      const distanceScore = avgDistance * 0.02;
+      state.clutter_level = normalize(countScore * 0.4 + distanceScore * 60);
+
+      const inZone = critical.filter((el) => isInsideFocus(el));
+      const ratio = critical.length ? inZone.length / critical.length : 0;
+      if (ratio > 0.75) state.sa_score = Math.min(100, state.sa_score + 0.5);
+
+      const fatigueBoost = state.clutter_level * 0.004;
+      state.fatigue = normalize(state.fatigue + fatigueBoost);
       renderMeters();
     }
 
     function renderMeters() {
-      awarenessBar.style.width = `${state.metrics.awareness}%`;
-      clutterBar.style.width = `${state.metrics.clutter}%`;
-      fatigueBar.style.width = `${state.metrics.fatigue}%`;
+      awarenessBar.style.width = `${state.sa_score}%`;
+      clutterBar.style.width = `${state.clutter_level}%`;
+      fatigueBar.style.width = `${state.fatigue}%`;
+      missionProgress.style.width = `${state.mission_progress * 100}%`;
     }
 
     function triggerAlert() {
       if (!state.running) return;
-      const available = instruments.filter((i) => !state.activeAlert || state.activeAlert.id !== i.id);
-      const inst = available[Math.floor(Math.random() * available.length)];
-      const el = document.querySelector(`[data-id="${inst.id}"]`);
-      state.activeAlert = { id: inst.id, started: performance.now() };
+      const available = activeInstrumentIds().filter((id) => !state.activeAlert || state.activeAlert.id !== id);
+      if (!available.length) return;
+      const instId = available[Math.floor(Math.random() * available.length)];
+      const instData = instruments.find((i) => i.id === instId);
+      const el = state.elements[instId];
+      state.activeAlert = { id: instId, started: performance.now(), realProblem: Math.random() > 0.25 };
+      el.classList.remove('safe', 'watch');
       el.classList.add('alert');
-      el.querySelector('.notes').textContent = 'Alert: confirm and clear!';
-      log(`${inst.label} flashing — click to clear.`);
+      el.querySelector('.notes').textContent = state.activeAlert.realProblem ? 'Danger — fix it!' : 'Hmm... maybe fake?';
+      log(`${instData.kidName} flashing — click to clear.`);
 
       setTimeout(() => {
-        if (state.activeAlert && state.activeAlert.id === inst.id) {
-          resolveAlert(inst.id, 'Missed');
+        if (state.activeAlert && state.activeAlert.id === instId) {
+          resolveAlert(instId, 'Missed');
         }
-      }, 5000);
+      }, 4500 + state.clutter_level * 8);
     }
 
     function resolveAlert(id, result) {
-      const el = document.querySelector(`[data-id="${id}"]`);
+      const el = state.elements[id];
       if (!el) return;
+      const inst = instruments.find((i) => i.id === id);
       el.classList.remove('alert');
-      el.querySelector('.notes').textContent = instruments.find((i) => i.id === id).note;
+      el.classList.add('watch');
+      el.querySelector('.notes').textContent = inst.note;
 
       if (result === 'Acknowledged') {
         const responseTime = Math.max(0, performance.now() - state.activeAlert.started);
         const focusBonus = isInsideFocus(el) ? 8 : 0;
-        const speedScore = Math.max(5, 25 - responseTime / 400);
-        state.metrics.awareness = Math.min(100, state.metrics.awareness + speedScore + focusBonus);
-        state.metrics.clutter = Math.max(5, state.metrics.clutter - (speedScore / 2 + focusBonus));
-        state.metrics.fatigue = Math.max(0, state.metrics.fatigue - (focusBonus / 2));
-        log(`Cleared ${el.dataset.id} in ${(responseTime / 1000).toFixed(1)}s — nice!`, true);
+        const speedScore = Math.max(4, 25 - responseTime / 400);
+        state.sa_score = Math.min(100, state.sa_score + speedScore + focusBonus);
+        state.clutter_level = Math.max(5, state.clutter_level - (speedScore / 2 + focusBonus));
+        state.fatigue = Math.max(0, state.fatigue - (focusBonus / 2));
+        state.mission_progress = Math.min(1, state.mission_progress + 0.05);
+        recordTrial(state.activeAlert.realProblem ? 'hit' : 'false_alarm');
+        log(`Cleared ${inst.kidName} in ${(responseTime / 1000).toFixed(1)}s — nice!`, true);
       } else {
-        state.metrics.awareness = Math.max(10, state.metrics.awareness - 8);
-        state.metrics.clutter = Math.min(100, state.metrics.clutter + 8);
-        state.metrics.fatigue = Math.min(100, state.metrics.fatigue + 6);
-        log(`${el.dataset.id} ignored — cockpit felt messy.`, true);
+        state.sa_score = Math.max(10, state.sa_score - 8);
+        state.clutter_level = Math.min(100, state.clutter_level + 10);
+        state.fatigue = Math.min(100, state.fatigue + 8);
+        recordTrial(state.activeAlert.realProblem ? 'miss' : 'correct_rejection');
+        log(`${inst.kidName} ignored — cockpit felt messy.`, true);
       }
 
       state.activeAlert = null;
+      renderMeters();
+      updateSummary();
+    }
+
+    function recordTrial(outcome) {
+      if (outcome === 'hit') state.hits++;
+      if (outcome === 'miss') state.misses++;
+      if (outcome === 'false_alarm') state.false_alarms++;
+      if (outcome === 'correct_rejection') state.correct_rejections++;
+
+      if (outcome === 'miss') {
+        state.sa_score = Math.max(0, state.sa_score - 3);
+        state.fatigue = Math.min(100, state.fatigue + 2);
+      }
+      if (outcome === 'false_alarm') state.fatigue = Math.min(100, state.fatigue + 1);
+      renderMeters();
+    }
+
+    function tickFatigue() {
+      state.fatigue = Math.min(100, state.fatigue + 0.6 + state.clutter_level * 0.002);
+      if (state.fatigue > 70) state.sa_score = Math.max(0, state.sa_score - 0.6);
+      if (state.fatigue > 80 && Math.random() < 0.3) triggerAlert();
       renderMeters();
     }
 
@@ -590,252 +891,138 @@
       if (state.running) return;
       state.running = true;
       log('Simulation running — respond to alerts and reorganize.');
-      state.timers.events = setInterval(triggerAlert, 3200);
-      state.timers.fatigue = setInterval(() => {
-        state.metrics.fatigue = Math.min(100, state.metrics.fatigue + 1);
-        renderMeters();
-      }, 1500);
+      state.alertTimer = setInterval(triggerAlert, 3600);
+      state.fatigueTimer = setInterval(tickFatigue, 1800);
+      state.questionTimer = setInterval(askSAQuestion, 12000);
     }
 
     function stopSimulation() {
       state.running = false;
-      clearInterval(state.timers.events);
-      clearInterval(state.timers.fatigue);
-      state.timers = { events: null, fatigue: null };
+      clearInterval(state.alertTimer);
+      clearInterval(state.fatigueTimer);
+      clearInterval(state.questionTimer);
+      state.alertTimer = state.fatigueTimer = state.questionTimer = null;
       log('Simulation paused.');
     }
 
-    function init() {
-      instruments.forEach(createInstrument);
-      scoreClutter();
-      instrumentArea.addEventListener('dragover', (e) => e.preventDefault());
-      document.getElementById('start-btn').addEventListener('click', startSimulation);
-      document.getElementById('stop-btn').addEventListener('click', stopSimulation);
-      document.getElementById('shuffle-btn').addEventListener('click', shuffleClutter);
-      document.getElementById('reset-btn').addEventListener('click', resetLayout);
-    }
+    function updateSummary() {
+      summaryList.innerHTML = '';
+      const clutterLabel = state.clutter_level > 70 ? 'Super messy' : state.clutter_level > 45 ? 'A bit messy' : 'Very tidy';
+      const awarenessLabel = state.sa_score > 70 ? 'Green' : state.sa_score > 40 ? 'Yellow' : 'Red';
+      const feedbacks = [
+        `Your cockpit is: ${clutterLabel}.`,
+        `You caught ${state.hits} alerts and missed ${state.misses}.`,
+        `Awareness bar stayed in the ${awarenessLabel} zone.`,
+      ];
+      if (state.clutter_level > 65) feedbacks.push('Try moving Speed, Height, and Direction closer together.');
+      if (state.misses > 2) feedbacks.push('Watch for red flashes — they matter most.');
+      if (state.false_alarms > state.hits) feedbacks.push('Too many fake alerts! Read the message before tapping.');
 
-    init();
-  </script>
-</body>
-</html>
-
-  <script>
-    const instrumentArea = document.getElementById('instrument-area');
-    const focusZone = document.getElementById('focus-zone');
-    const logEl = document.getElementById('event-log');
-    const awarenessBar = document.getElementById('awareness-bar');
-    const clutterBar = document.getElementById('clutter-bar');
-    const fatigueBar = document.getElementById('fatigue-bar');
-
-    const instruments = [
-      { id: 'altimeter', label: 'Altimeter', readout: '12,300 ft', note: 'Altitude & pressure monitor.' },
-      { id: 'attitude', label: 'Attitude', readout: 'Level — 2° up', note: 'Artificial horizon.' },
-      { id: 'airspeed', label: 'Airspeed', readout: '245 kts', note: 'Pitch for speed before power.' },
-      { id: 'heading', label: 'Heading', readout: '095°', note: 'Stay on course or drift east.' },
-      { id: 'engine', label: 'Engine', readout: '92% thrust', note: 'Check temps & fuel flow.' },
-      { id: 'radar', label: 'Weather Radar', readout: 'Cells NE', note: 'Storms clutter the map.' },
-      { id: 'nav', label: 'Nav Radios', readout: 'VOR 114.3', note: 'Needle centers when tuned.' },
-      { id: 'checklist', label: 'Checklist', readout: 'Approach', note: 'Tap to verify steps.' },
-      { id: 'alert', label: 'Caution Lights', readout: 'No alerts', note: 'Blink = scan & respond.' }
-    ];
-
-    const state = {
-      running: false,
-      activeAlert: null,
-      metrics: { awareness: 65, clutter: 65, fatigue: 20 },
-      layout: {},
-      timers: { events: null, fatigue: null },
-    };
-
-    function log(message, highlight) {
-      const entry = document.createElement('div');
-      entry.className = 'log-entry';
-      entry.innerHTML = highlight ? `<strong>${message}</strong>` : message;
-      logEl.prepend(entry);
-      while (logEl.children.length > 20) logEl.removeChild(logEl.lastChild);
-    }
-
-    function randomPosition() {
-      const areaRect = instrumentArea.getBoundingClientRect();
-      const width = 170;
-      const height = 120;
-      const padding = 10;
-      const x = Math.random() * (areaRect.width - width - padding * 2) + padding;
-      const y = Math.random() * (areaRect.height - height - padding * 2) + padding;
-      return { x, y };
-    }
-
-    function createInstrument(inst) {
-      const el = document.createElement('div');
-      el.className = 'instrument';
-      el.draggable = true;
-      el.dataset.id = inst.id;
-      el.innerHTML = `
-        <h3>${inst.label} <span>drag</span></h3>
-        <div class="readout">${inst.readout}</div>
-        <div class="notes">${inst.note}</div>
-      `;
-
-      el.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', inst.id);
-        const rect = el.getBoundingClientRect();
-        el.dataset.offsetX = e.clientX - rect.left;
-        el.dataset.offsetY = e.clientY - rect.top;
+      feedbacks.forEach((line) => {
+        const li = document.createElement('li');
+        li.textContent = line;
+        summaryList.appendChild(li);
       });
-
-      el.addEventListener('dragend', (e) => {
-        const offsetX = Number(el.dataset.offsetX || 0);
-        const offsetY = Number(el.dataset.offsetY || 0);
-        const areaRect = instrumentArea.getBoundingClientRect();
-        const newX = Math.min(Math.max(e.clientX - areaRect.left - offsetX, 4), areaRect.width - el.offsetWidth - 4);
-        const newY = Math.min(Math.max(e.clientY - areaRect.top - offsetY, 4), areaRect.height - el.offsetHeight - 4);
-        setPosition(el, { x: newX, y: newY });
-        updateFocusFlag(el);
-        scoreClutter();
-      });
-
-      el.addEventListener('click', () => {
-        if (state.activeAlert && state.activeAlert.id === inst.id) {
-          resolveAlert(inst.id, 'Acknowledged');
-        }
-      });
-
-      instrumentArea.appendChild(el);
-      const pos = randomPosition();
-      setPosition(el, pos);
-      state.layout[inst.id] = pos;
     }
 
-    function setPosition(el, pos) {
-      el.style.left = `${pos.x}px`;
-      el.style.top = `${pos.y}px`;
-      state.layout[el.dataset.id] = pos;
+    function buildQuestionForType(type) {
+      const activeIds = activeInstrumentIds();
+      const pick = activeIds[Math.floor(Math.random() * activeIds.length)];
+      const inst = instruments.find((i) => i.id === pick);
+      if (!inst) return { prompt: 'What is your speed?', answer: '245' };
+
+      if (type === 'perception') return { prompt: `What is your ${inst.kidName}?`, answer: inst.readout };
+      if (type === 'comprehension') return { prompt: `Is ${inst.kidName} in the green?`, answer: 'yes' };
+      return { prompt: `Where will ${inst.kidName} be in 10s?`, answer: 'stable' };
     }
 
-    function resetLayout() {
-      Array.from(document.querySelectorAll('.instrument')).forEach((el) => {
-        const pos = randomPosition();
-        setPosition(el, pos);
-        el.classList.remove('focused');
-      });
-      scoreClutter();
-      log('Layout reset — start testing new ideas!');
-    }
-
-    function shuffleClutter() {
-      Array.from(document.querySelectorAll('.instrument')).forEach((el) => {
-        const pos = randomPosition();
-        setPosition(el, pos);
-      });
-      scoreClutter();
-      log('We scattered the gauges. Try organizing them.');
-    }
-
-    function isInsideFocus(el) {
-      const focusRect = focusZone.getBoundingClientRect();
-      const instRect = el.getBoundingClientRect();
-      return (
-        instRect.left >= focusRect.left &&
-        instRect.right <= focusRect.right &&
-        instRect.top >= focusRect.top &&
-        instRect.bottom <= focusRect.bottom
-      );
-    }
-
-    function updateFocusFlag(el) {
-      const inside = isInsideFocus(el);
-      el.classList.toggle('focused', inside);
-    }
-
-    function scoreClutter() {
-      const all = Array.from(document.querySelectorAll('.instrument'));
-      const focused = all.filter(isInsideFocus);
-      const focusScore = Math.min(100, 45 + focused.length * 8);
-      const clutterScore = Math.max(20, 90 - focused.length * 10 - all.length);
-      const fatigueScore = Math.min(100, state.metrics.fatigue + (all.length - focused.length));
-
-      state.metrics.awareness = focusScore;
-      state.metrics.clutter = clutterScore;
-      state.metrics.fatigue = fatigueScore;
-      renderMeters();
-    }
-
-    function renderMeters() {
-      awarenessBar.style.width = `${state.metrics.awareness}%`;
-      clutterBar.style.width = `${state.metrics.clutter}%`;
-      fatigueBar.style.width = `${state.metrics.fatigue}%`;
-    }
-
-    function triggerAlert() {
+    function askSAQuestion() {
       if (!state.running) return;
-      const available = instruments.filter((i) => !state.activeAlert || state.activeAlert.id !== i.id);
-      const inst = available[Math.floor(Math.random() * available.length)];
-      const el = document.querySelector(`[data-id="${inst.id}"]`);
-      state.activeAlert = { id: inst.id, started: performance.now() };
-      el.classList.add('alert');
-      el.querySelector('.notes').textContent = 'Alert: confirm and clear!';
-      log(`${inst.label} flashing — click to clear.`);
-
-      setTimeout(() => {
-        if (state.activeAlert && state.activeAlert.id === inst.id) {
-          resolveAlert(inst.id, 'Missed');
-        }
-      }, 5000);
+      quizOverlay.style.display = 'grid';
+      const types = ['perception', 'comprehension', 'projection'];
+      const type = types[Math.floor(Math.random() * types.length)];
+      quizTitle.textContent = `Quick Check (${type})`;
+      const q = buildQuestionForType(type);
+      quizQuestion.textContent = q.prompt;
+      quizOptions.innerHTML = '';
+      const options = ['yes', 'no', 'stable', q.answer].sort(() => Math.random() - 0.5).slice(0, 3);
+      options.push(q.answer);
+      const unique = [...new Set(options)].slice(0, 3);
+      unique.forEach((opt) => {
+        const btn = document.createElement('button');
+        btn.textContent = opt;
+        btn.addEventListener('click', () => {
+          const correct = opt === q.answer;
+          const rt = 0; // simplified: not timing answers in this version
+          updateSAScore(type, correct, rt);
+          quizOverlay.style.display = 'none';
+          log(correct ? 'Great situational awareness!' : 'SA check missed.');
+          renderMeters();
+        });
+        quizOptions.appendChild(btn);
+      });
     }
 
-    function resolveAlert(id, result) {
-      const el = document.querySelector(`[data-id="${id}"]`);
-      if (!el) return;
-      el.classList.remove('alert');
-      el.querySelector('.notes').textContent = instruments.find((i) => i.id === id).note;
+    function updateSAScore(type, correct, rt) {
+      const speedBonus = rt < 2000 ? 1 : 0;
+      const base = type === 'perception' ? 1 : type === 'comprehension' ? 2 : 3;
+      if (correct) state.sa_score = Math.min(100, state.sa_score + base + speedBonus);
+      else state.sa_score = Math.max(0, state.sa_score - base);
+    }
 
-      if (result === 'Acknowledged') {
-        const responseTime = Math.max(0, performance.now() - state.activeAlert.started);
-        const focusBonus = isInsideFocus(el) ? 8 : 0;
-        const speedScore = Math.max(5, 25 - responseTime / 400);
-        state.metrics.awareness = Math.min(100, state.metrics.awareness + speedScore + focusBonus);
-        state.metrics.clutter = Math.max(5, state.metrics.clutter - (speedScore / 2 + focusBonus));
-        state.metrics.fatigue = Math.max(0, state.metrics.fatigue - (focusBonus / 2));
-        log(`Cleared ${el.dataset.id} in ${(responseTime / 1000).toFixed(1)}s — nice!`, true);
+    function activeInstrumentIds() {
+      const level = LevelDesign[state.levelIndex] || LevelDesign[1];
+      return level.ids;
+    }
+
+    function loadLevel(levelIndex) {
+      state.levelIndex = levelIndex;
+      instrumentArea.innerHTML = '';
+      state.layout = {};
+      state.elements = {};
+      const level = LevelDesign[levelIndex];
+      level.ids.forEach((id) => {
+        const inst = instruments.find((i) => i.id === id);
+        if (inst) createInstrument(inst);
+      });
+      updateClutterAndGrouping();
+      log(`Loaded ${level.name}.`);
+    }
+
+    function startTutorial() {
+      state.tutorialStep = TutorialStep.Intro;
+      tutorialOverlay.style.display = 'flex';
+      tutorialText.textContent = 'Welcome pilot! Let\'s make this cockpit kid-friendly.';
+    }
+
+    function nextTutorial() {
+      state.tutorialStep += 1;
+      if (state.tutorialStep === TutorialStep.ExplainSpeed) {
+        tutorialText.textContent = 'This is your Speed gauge. Keep it in view.';
+      } else if (state.tutorialStep === TutorialStep.ExplainHeight) {
+        tutorialText.textContent = 'Height shows how high you fly. Place it near Speed.';
+      } else if (state.tutorialStep === TutorialStep.ExplainFocus) {
+        tutorialText.textContent = 'Drag Speed and Height into the glowing Focus Zone.';
+      } else if (state.tutorialStep === TutorialStep.FirstAlert) {
+        tutorialText.textContent = 'When something flashes red, tap it fast! Ready?';
       } else {
-        state.metrics.awareness = Math.max(10, state.metrics.awareness - 8);
-        state.metrics.clutter = Math.min(100, state.metrics.clutter + 8);
-        state.metrics.fatigue = Math.min(100, state.metrics.fatigue + 6);
-        log(`${el.dataset.id} ignored — cockpit felt messy.`, true);
+        tutorialOverlay.style.display = 'none';
+        log('Tutorial complete.');
       }
-
-      state.activeAlert = null;
-      renderMeters();
-    }
-
-    function startSimulation() {
-      if (state.running) return;
-      state.running = true;
-      log('Simulation running — respond to alerts and reorganize.');
-      state.timers.events = setInterval(triggerAlert, 3200);
-      state.timers.fatigue = setInterval(() => {
-        state.metrics.fatigue = Math.min(100, state.metrics.fatigue + 1);
-        renderMeters();
-      }, 1500);
-    }
-
-    function stopSimulation() {
-      state.running = false;
-      clearInterval(state.timers.events);
-      clearInterval(state.timers.fatigue);
-      state.timers = { events: null, fatigue: null };
-      log('Simulation paused.');
     }
 
     function init() {
-      instruments.forEach(createInstrument);
-      scoreClutter();
+      loadLevel(1);
+      updateClutterAndGrouping();
       instrumentArea.addEventListener('dragover', (e) => e.preventDefault());
       document.getElementById('start-btn').addEventListener('click', startSimulation);
       document.getElementById('stop-btn').addEventListener('click', stopSimulation);
       document.getElementById('shuffle-btn').addEventListener('click', shuffleClutter);
       document.getElementById('reset-btn').addEventListener('click', resetLayout);
+      document.getElementById('tutorial-btn').addEventListener('click', startTutorial);
+      tutorialNext.addEventListener('click', nextTutorial);
+      renderMeters();
+      updateSummary();
     }
 
     init();
