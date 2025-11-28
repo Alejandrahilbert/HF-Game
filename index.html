@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
   <style>
-:root {
+    :root {
       --ink: #0c0c1c;
       --panel: #11162b;
       --panel-2: #161b35;
@@ -323,18 +323,19 @@
     }
   </style>
 </head>
-<body> 
- <div class="frame">
+<body>
+  <div class="frame">
     <header class="top-bar">
       <div class="title">
         <div class="badge">8-BIT LAB</div>
         <h1>Cockpit Cleanup Challenge</h1>
       </div>
-       <div class="subtitle">
+      <div class="subtitle">
         Drag and drop instruments, respond to alerts, and test whether a tidier cockpit helps you fly smoother.
         This mini-game is built for middle school pilots to explore human factors: clutter, attention, and smart layout choices.
       </div>
     </header>
+
     <div class="layout">
       <section class="cockpit">
         <div class="cockpit-header">
@@ -346,7 +347,8 @@
         </div>
         <div class="instrument-area" id="instrument-area"></div>
         <div class="focus-zone" id="focus-zone">Focus Zone — tighter grouping = faster reactions</div>
-      </section> 
+      </section>
+
       <aside class="control-panel">
         <div class="panel">
           <h3>Mission Status</h3>
@@ -365,7 +367,8 @@
             </div>
           </div>
         </div>
-         <div class="panel">
+
+        <div class="panel">
           <h3>Controls</h3>
           <div class="controls">
             <button id="start-btn">Start Simulation</button>
@@ -375,7 +378,8 @@
           </div>
           <div class="hint">When alerts flash red, click that instrument quickly. Try flying once with clutter, then once after organizing.</div>
         </div>
-          <div class="panel">
+
+        <div class="panel">
           <h3>Design Notebook</h3>
           <ul class="notes-list">
             <li>Which gauges belong closest together?</li>
@@ -392,6 +396,229 @@
       </aside>
     </div>
   </div>
+
+  <script>
+    const instrumentArea = document.getElementById('instrument-area');
+    const focusZone = document.getElementById('focus-zone');
+    const logEl = document.getElementById('event-log');
+    const awarenessBar = document.getElementById('awareness-bar');
+    const clutterBar = document.getElementById('clutter-bar');
+    const fatigueBar = document.getElementById('fatigue-bar');
+
+    const instruments = [
+      { id: 'altimeter', label: 'Altimeter', readout: '12,300 ft', note: 'Altitude & pressure monitor.' },
+      { id: 'attitude', label: 'Attitude', readout: 'Level — 2° up', note: 'Artificial horizon.' },
+      { id: 'airspeed', label: 'Airspeed', readout: '245 kts', note: 'Pitch for speed before power.' },
+      { id: 'heading', label: 'Heading', readout: '095°', note: 'Stay on course or drift east.' },
+      { id: 'engine', label: 'Engine', readout: '92% thrust', note: 'Check temps & fuel flow.' },
+      { id: 'radar', label: 'Weather Radar', readout: 'Cells NE', note: 'Storms clutter the map.' },
+      { id: 'nav', label: 'Nav Radios', readout: 'VOR 114.3', note: 'Needle centers when tuned.' },
+      { id: 'checklist', label: 'Checklist', readout: 'Approach', note: 'Tap to verify steps.' },
+      { id: 'alert', label: 'Caution Lights', readout: 'No alerts', note: 'Blink = scan & respond.' }
+    ];
+
+    const state = {
+      running: false,
+      activeAlert: null,
+      metrics: { awareness: 65, clutter: 65, fatigue: 20 },
+      layout: {},
+      timers: { events: null, fatigue: null },
+    };
+
+    function log(message, highlight) {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = highlight ? `<strong>${message}</strong>` : message;
+      logEl.prepend(entry);
+      while (logEl.children.length > 20) logEl.removeChild(logEl.lastChild);
+    }
+
+    function randomPosition() {
+      const areaRect = instrumentArea.getBoundingClientRect();
+      const width = 170;
+      const height = 120;
+      const padding = 10;
+      const x = Math.random() * (areaRect.width - width - padding * 2) + padding;
+      const y = Math.random() * (areaRect.height - height - padding * 2) + padding;
+      return { x, y };
+    }
+
+    function createInstrument(inst) {
+      const el = document.createElement('div');
+      el.className = 'instrument';
+      el.draggable = true;
+      el.dataset.id = inst.id;
+      el.innerHTML = `
+        <h3>${inst.label} <span>drag</span></h3>
+        <div class="readout">${inst.readout}</div>
+        <div class="notes">${inst.note}</div>
+      `;
+
+      el.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', inst.id);
+        const rect = el.getBoundingClientRect();
+        el.dataset.offsetX = e.clientX - rect.left;
+        el.dataset.offsetY = e.clientY - rect.top;
+      });
+
+      el.addEventListener('dragend', (e) => {
+        const offsetX = Number(el.dataset.offsetX || 0);
+        const offsetY = Number(el.dataset.offsetY || 0);
+        const areaRect = instrumentArea.getBoundingClientRect();
+        const newX = Math.min(Math.max(e.clientX - areaRect.left - offsetX, 4), areaRect.width - el.offsetWidth - 4);
+        const newY = Math.min(Math.max(e.clientY - areaRect.top - offsetY, 4), areaRect.height - el.offsetHeight - 4);
+        setPosition(el, { x: newX, y: newY });
+        updateFocusFlag(el);
+        scoreClutter();
+      });
+
+      el.addEventListener('click', () => {
+        if (state.activeAlert && state.activeAlert.id === inst.id) {
+          resolveAlert(inst.id, 'Acknowledged');
+        }
+      });
+
+      instrumentArea.appendChild(el);
+      const pos = randomPosition();
+      setPosition(el, pos);
+      state.layout[inst.id] = pos;
+    }
+
+    function setPosition(el, pos) {
+      el.style.left = `${pos.x}px`;
+      el.style.top = `${pos.y}px`;
+      state.layout[el.dataset.id] = pos;
+    }
+
+    function resetLayout() {
+      Array.from(document.querySelectorAll('.instrument')).forEach((el) => {
+        const pos = randomPosition();
+        setPosition(el, pos);
+        el.classList.remove('focused');
+      });
+      scoreClutter();
+      log('Layout reset — start testing new ideas!');
+    }
+
+    function shuffleClutter() {
+      Array.from(document.querySelectorAll('.instrument')).forEach((el) => {
+        const pos = randomPosition();
+        setPosition(el, pos);
+      });
+      scoreClutter();
+      log('We scattered the gauges. Try organizing them.');
+    }
+
+    function isInsideFocus(el) {
+      const focusRect = focusZone.getBoundingClientRect();
+      const instRect = el.getBoundingClientRect();
+      return (
+        instRect.left >= focusRect.left &&
+        instRect.right <= focusRect.right &&
+        instRect.top >= focusRect.top &&
+        instRect.bottom <= focusRect.bottom
+      );
+    }
+
+    function updateFocusFlag(el) {
+      const inside = isInsideFocus(el);
+      el.classList.toggle('focused', inside);
+    }
+
+    function scoreClutter() {
+      const all = Array.from(document.querySelectorAll('.instrument'));
+      const focused = all.filter(isInsideFocus);
+      const focusScore = Math.min(100, 45 + focused.length * 8);
+      const clutterScore = Math.max(20, 90 - focused.length * 10 - all.length);
+      const fatigueScore = Math.min(100, state.metrics.fatigue + (all.length - focused.length));
+
+      state.metrics.awareness = focusScore;
+      state.metrics.clutter = clutterScore;
+      state.metrics.fatigue = fatigueScore;
+      renderMeters();
+    }
+
+    function renderMeters() {
+      awarenessBar.style.width = `${state.metrics.awareness}%`;
+      clutterBar.style.width = `${state.metrics.clutter}%`;
+      fatigueBar.style.width = `${state.metrics.fatigue}%`;
+    }
+
+    function triggerAlert() {
+      if (!state.running) return;
+      const available = instruments.filter((i) => !state.activeAlert || state.activeAlert.id !== i.id);
+      const inst = available[Math.floor(Math.random() * available.length)];
+      const el = document.querySelector(`[data-id="${inst.id}"]`);
+      state.activeAlert = { id: inst.id, started: performance.now() };
+      el.classList.add('alert');
+      el.querySelector('.notes').textContent = 'Alert: confirm and clear!';
+      log(`${inst.label} flashing — click to clear.`);
+
+      setTimeout(() => {
+        if (state.activeAlert && state.activeAlert.id === inst.id) {
+          resolveAlert(inst.id, 'Missed');
+        }
+      }, 5000);
+    }
+
+    function resolveAlert(id, result) {
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (!el) return;
+      el.classList.remove('alert');
+      el.querySelector('.notes').textContent = instruments.find((i) => i.id === id).note;
+
+      if (result === 'Acknowledged') {
+        const responseTime = Math.max(0, performance.now() - state.activeAlert.started);
+        const focusBonus = isInsideFocus(el) ? 8 : 0;
+        const speedScore = Math.max(5, 25 - responseTime / 400);
+        state.metrics.awareness = Math.min(100, state.metrics.awareness + speedScore + focusBonus);
+        state.metrics.clutter = Math.max(5, state.metrics.clutter - (speedScore / 2 + focusBonus));
+        state.metrics.fatigue = Math.max(0, state.metrics.fatigue - (focusBonus / 2));
+        log(`Cleared ${el.dataset.id} in ${(responseTime / 1000).toFixed(1)}s — nice!`, true);
+      } else {
+        state.metrics.awareness = Math.max(10, state.metrics.awareness - 8);
+        state.metrics.clutter = Math.min(100, state.metrics.clutter + 8);
+        state.metrics.fatigue = Math.min(100, state.metrics.fatigue + 6);
+        log(`${el.dataset.id} ignored — cockpit felt messy.`, true);
+      }
+
+      state.activeAlert = null;
+      renderMeters();
+    }
+
+    function startSimulation() {
+      if (state.running) return;
+      state.running = true;
+      log('Simulation running — respond to alerts and reorganize.');
+      state.timers.events = setInterval(triggerAlert, 3200);
+      state.timers.fatigue = setInterval(() => {
+        state.metrics.fatigue = Math.min(100, state.metrics.fatigue + 1);
+        renderMeters();
+      }, 1500);
+    }
+
+    function stopSimulation() {
+      state.running = false;
+      clearInterval(state.timers.events);
+      clearInterval(state.timers.fatigue);
+      state.timers = { events: null, fatigue: null };
+      log('Simulation paused.');
+    }
+
+    function init() {
+      instruments.forEach(createInstrument);
+      scoreClutter();
+      instrumentArea.addEventListener('dragover', (e) => e.preventDefault());
+      document.getElementById('start-btn').addEventListener('click', startSimulation);
+      document.getElementById('stop-btn').addEventListener('click', stopSimulation);
+      document.getElementById('shuffle-btn').addEventListener('click', shuffleClutter);
+      document.getElementById('reset-btn').addEventListener('click', resetLayout);
+    }
+
+    init();
+  </script>
+</body>
+</html>
 
   <script>
     const instrumentArea = document.getElementById('instrument-area');
