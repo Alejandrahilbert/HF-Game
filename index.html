@@ -1,569 +1,779 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cockpit Cleanup Lab</title>
-  <style>
-    :root {
-      --bg: #0d1b2a;
-      --panel: #1b263b;
-      --accent: #f08c00;
-      --glow: #70e000;
-      --text: #f1f5f9;
-      --muted: #9aa7b8;
-      --danger: #ff595e;
-      --shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
-      --radius: 12px;
-      --pixel: 'Press Start 2P', 'Courier New', monospace;
-    }
-
-    @font-face {
-      font-family: 'Press Start 2P';
-      font-style: normal;
-      font-weight: 400;
-      src: local('Press Start 2P'),
-           url('https://fonts.gstatic.com/s/pressstart2p/v14/e3t4euO8T-267oIAQAu6jDQyK3n1iaQ.woff2')
-             format('woff2');
-      font-display: swap;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: radial-gradient(circle at 20% 20%, #102542 0, #0b1628 30%, #050910 100%);
-      color: var(--text);
-      font-family: var(--pixel);
-      letter-spacing: 0.5px;
-      display: flex;
-      justify-content: center;
-      padding: 28px 14px 60px;
-    }
-
-    .shell {
-      width: 1200px;
-      background: var(--panel);
-      border: 3px solid #415a77;
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 18px;
-      display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: 18px;
-    }
-
-    @media (max-width: 1100px) {
-      .shell { grid-template-columns: 1fr; }
-      .scoreboard { order: 2; }
-      .playfield { order: 1; }
-    }
-
-    h1 {
-      margin: 0 0 10px;
-      color: var(--glow);
-      text-shadow: 0 0 8px rgba(112, 224, 0, 0.5);
-      font-size: 22px;
-    }
-
-    p {
-      margin: 0 0 12px;
-      line-height: 1.5;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .panel {
-      background: #111826;
-      border: 2px solid #23324a;
-      border-radius: var(--radius);
-      padding: 14px;
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.04);
-    }
-
-    .scoreboard .hint {
-      color: #cbd5e1;
-      font-size: 12px;
-      margin-bottom: 10px;
-    }
-
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .metric {
-      background: #162033;
-      border: 2px solid #24334f;
-      padding: 10px;
-      border-radius: 10px;
-    }
-
-    .metric .label {
-      color: var(--muted);
-      font-size: 11px;
-      margin-bottom: 6px;
-    }
-
-    .metric .value {
-      font-size: 18px;
-      color: #f8fafc;
-    }
-
-    .legend {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: #0f192a;
-      border: 2px solid #24334f;
-      padding: 8px 10px;
-      border-radius: 10px;
-      font-size: 11px;
-    }
-
-    .dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 3px;
-    }
-
-    .controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin: 12px 0;
-    }
-
-    button {
-      font-family: var(--pixel);
-      border: 2px solid #24334f;
-      background: #0f1a2a;
-      color: var(--text);
-      padding: 10px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease;
-      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
-      font-size: 11px;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 14px rgba(0, 0, 0, 0.3);
-      background: #142139;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .danger {
-      border-color: var(--danger);
-      color: var(--danger);
-    }
-
-    .playfield {
-      position: relative;
-      background: #0a1220;
-      border: 2px dashed #23324a;
-      border-radius: var(--radius);
-      min-height: 620px;
-      overflow: hidden;
-    }
-
-    .grid-lines {
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(#11253f 1px, transparent 1px),
-        linear-gradient(90deg, #11253f 1px, transparent 1px);
-      background-size: 60px 60px;
-      opacity: 0.4;
-      pointer-events: none;
-    }
-
-    .control {
-      position: absolute;
-      width: 150px;
-      background: linear-gradient(180deg, #1f2c43, #0e1626);
-      border: 2px solid #2f3f5d;
-      border-radius: 12px;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-      padding: 12px;
-      cursor: grab;
-      user-select: none;
-      transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
-    }
-
-    .control:active {
-      transform: translateY(1px);
-    }
-
-    .control.testing {
-      animation: pulse 1s infinite;
-      border-color: var(--glow);
-      box-shadow: 0 0 0 2px rgba(112, 224, 0, 0.2);
-    }
-
-    .control .label {
-      font-size: 11px;
-      color: #e2e8f0;
-      margin-bottom: 6px;
-    }
-
-    .control .value {
-      font-size: 16px;
-      color: #fff;
-      text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
-    }
-
-    .control .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 8px;
-      font-size: 10px;
-      background: #0c1a2b;
-      border: 1px solid #24334f;
-      padding: 6px 8px;
-      border-radius: 8px;
-    }
-
-    .control.altitude { border-color: #8ecae6; }
-    .control.throttle { border-color: #f08c00; }
-    .control.heading { border-color: #a78bfa; }
-    .control.flaps   { border-color: #ffb703; }
-    .control.gear    { border-color: #ef476f; }
-    .control.radio   { border-color: #06d6a0; }
-    .control.fuel    { border-color: #ffd166; }
-    .control.horizon { border-color: #64dfdf; }
-
-    @keyframes pulse {
-      0%   { box-shadow: 0 0 0 2px rgba(112, 224, 0, 0.3); }
-      50%  { box-shadow: 0 0 0 8px rgba(112, 224, 0, 0.05); }
-      100% { box-shadow: 0 0 0 2px rgba(112, 224, 0, 0.3); }
-    }
-
-    .status {
-      background: #0f1a2b;
-      border: 2px solid #22314a;
-      border-radius: 10px;
-      padding: 12px;
-      margin-top: 10px;
-      min-height: 92px;
-      font-size: 12px;
-      color: #e2e8f0;
-    }
-
-    .status .title {
-      color: var(--glow);
-      margin-bottom: 6px;
-      font-size: 12px;
-    }
-
-    .status .log {
-      color: #cbd5e1;
-      line-height: 1.4;
-      white-space: pre-wrap;
-    }
-  </style>
-</head>
-<body>
-  <div class="shell">
-    <section class="scoreboard">
-      <h1>Cockpit Cleanup Lab</h1>
-      <p>
-        Drag instruments to design a kid-friendly cockpit. Run a flight test to see
-        how quickly you can find the right control before and after you tidy the panel.
-      </p>
-
-      <div class="panel">
-        <div class="hint">
-          Try clustering related controls. Clear grouping is a core human factors principle.
-        </div>
-
-        <div class="metrics">
-          <div class="metric">
-            <div class="label">Latest test</div>
-            <div class="value" id="latest-time">—</div>
-          </div>
-          <div class="metric">
-            <div class="label">Best time</div>
-            <div class="value" id="best-time">—</div>
-          </div>
-          <div class="metric">
-            <div class="label">Avg per step</div>
-            <div class="value" id="avg-step">—</div>
-          </div>
-          <div class="metric">
-            <div class="label">Errors</div>
-            <div class="value" id="errors">0</div>
-          </div>
-        </div>
-
-        <div class="controls">
-          <button id="start-test">Start flight test</button>
-          <button id="organize">Organize mode: Off</button>
-          <button id="reset" class="danger">Reset clutter</button>
-        </div>
-
-        <div class="legend">
-          <div class="badge">
-            <span class="dot" style="background:#8ecae6"></span>Flight data
-          </div>
-          <div class="badge">
-            <span class="dot" style="background:#f08c00"></span>Power &amp; thrust
-          </div>
-          <div class="badge">
-            <span class="dot" style="background:#a78bfa"></span>Navigation
-          </div>
-          <div class="badge">
-            <span class="dot" style="background:#06d6a0"></span>Comms &amp; status
-          </div>
-        </div>
-      </div>
-
-      <div class="status">
-        <div class="title">Mission log</div>
-        <div class="log" id="log">
-          Arrange controls, then tap "Start flight test". When the prompt appears,
-          click the highlighted control as fast as you can.
-        </div>
-      </div>
-    </section>
-
-    <section class="playfield">
-      <div class="grid-lines"></div>
-    </section>
-  </div>
-
-  <script>
-    const playfield = document.querySelector('.playfield');
-    const logEl = document.getElementById('log');
-    const latestEl = document.getElementById('latest-time');
-    const bestEl = document.getElementById('best-time');
-    const avgEl = document.getElementById('avg-step');
-    const errorEl = document.getElementById('errors');
-    const startBtn = document.getElementById('start-test');
-    const organizeBtn = document.getElementById('organize');
-    const resetBtn = document.getElementById('reset');
-
-    const controls = [
-      { key: 'altitude', label: 'Altimeter',    value: '12,200 ft',      tag: 'Flight data' },
-      { key: 'throttle', label: 'Throttle',     value: '65% power',      tag: 'Power' },
-      { key: 'heading',  label: 'Heading',      value: '090° east',      tag: 'Navigation' },
-      { key: 'flaps',    label: 'Flaps',        value: '10° deployed',   tag: 'Lift' },
-      { key: 'gear',     label: 'Landing Gear', value: 'Down & locked',  tag: 'Landing' },
-      { key: 'radio',    label: 'Radio',        value: 'Tower: 118.4',   tag: 'Comms' },
-      { key: 'fuel',     label: 'Fuel Gauge',   value: '82% remaining',  tag: 'Fuel' },
-      { key: 'horizon',  label: 'Horizon',      value: 'Level flight',   tag: 'Attitude' },
-    ];
-
-    const tasks = [
-      { key: 'throttle', message: 'Add thrust for takeoff' },
-      { key: 'heading',  message: 'Turn to heading 090°' },
-      { key: 'altitude', message: 'Check 12,000 ft' },
-      { key: 'gear',     message: 'Gear down for landing' },
-      { key: 'radio',    message: 'Call the tower' },
-      { key: 'flaps',    message: 'Set flaps to 10°' },
-      { key: 'fuel',     message: 'Verify fuel' },
-      { key: 'horizon',  message: 'Confirm level wings' },
-    ];
-
-    let elements = new Map();
-    let dragging = null;
-    let offset = { x: 0, y: 0 };
-    let organizeMode = false;
-    let currentTaskIndex = 0;
-    let testActive = false;
-    let times = [];
-    let best = null;
-    let errors = 0;
-    let taskStart = null;
-
-    function randomPosition() {
-      const padding = 30;
-      const maxX = playfield.clientWidth - 160;
-      const maxY = playfield.clientHeight - 180;
-      return {
-        x: Math.random() * (maxX - padding) + padding,
-        y: Math.random() * (maxY - padding) + padding,
-      };
-    }
-
-    function createControl(ctrl) {
-      const div = document.createElement('div');
-      div.className = 'control ' + ctrl.key;
-      div.dataset.key = ctrl.key;
-      div.innerHTML = `
-        <div class="label">${ctrl.label}</div>
-        <div class="value">${ctrl.value}</div>
-        <div class="tag">${ctrl.tag}</div>
-      `;
-      const pos = randomPosition();
-      div.style.left = pos.x + 'px';
-      div.style.top = pos.y + 'px';
-      playfield.appendChild(div);
-      elements.set(ctrl.key, div);
-    }
-
-    function populateControls() {
-      playfield.innerHTML = '<div class="grid-lines"></div>';
-      elements.clear();
-      controls.forEach(createControl);
-    }
-
-    function setLog(message) {
-      logEl.textContent = message;
-    }
-
-    function setMetrics({ latest, avg, err }) {
-      latestEl.textContent = latest ?? '—';
-      avgEl.textContent = avg ?? '—';
-      errorEl.textContent = err ?? errors;
-      bestEl.textContent = best === null ? '—' : best.toFixed(2) + 's';
-    }
-
-    function formatSeconds(ms) {
-      return (ms / 1000).toFixed(2);
-    }
-
-    function startTest() {
-      currentTaskIndex = 0;
-      times = [];
-      errors = 0;
-      testActive = true;
-      startBtn.disabled = true;
-      setLog('Flight test running: click the highlighted control that matches each prompt.');
-      nextTask();
-    }
-
-    function nextTask() {
-      Array.from(elements.values()).forEach(el => el.classList.remove('testing'));
-      if (currentTaskIndex >= tasks.length) {
-        finishTest();
-        return;
-      }
-      const task = tasks[currentTaskIndex];
-      const el = elements.get(task.key);
-      if (el) el.classList.add('testing');
-      setLog('Task ' + (currentTaskIndex + 1) + '/' + tasks.length + ': ' + task.message);
-      taskStart = performance.now();
-    }
-
-    function finishTest() {
-      testActive = false;
-      startBtn.disabled = false;
-      Array.from(elements.values()).forEach(el => el.classList.remove('testing'));
-      const total = times.reduce((a, b) => a + b, 0);
-      const avg = times.length ? total / times.length : 0;
-      best = best === null ? total : Math.min(best, total);
-      setMetrics({
-        latest: formatSeconds(total) + 's',
-        avg: formatSeconds(avg) + 's',
-        err: errors
-      });
-      setLog(
-        'Flight complete! Total time: ' + formatSeconds(total) +
-        's | Avg step: ' + formatSeconds(avg) +
-        's | Errors: ' + errors +
-        '. Try reorganizing the cockpit to beat your time.'
-      );
-    }
-
-    function handleControlClick(key) {
-      if (!testActive) return;
-      const task = tasks[currentTaskIndex];
-      if (task.key === key) {
-        const elapsed = performance.now() - taskStart;
-        times.push(elapsed);
-        currentTaskIndex += 1;
-        nextTask();
-      } else {
-        errors += 1;
-        errorEl.textContent = errors;
-        setLog('Oops, wrong control. We need: ' + task.message);
-      }
-    }
-
-    function toggleOrganize() {
-      organizeMode = !organizeMode;
-      organizeBtn.textContent = 'Organize mode: ' + (organizeMode ? 'On' : 'Off');
-      setLog(
-        organizeMode
-          ? 'Drag controls into groups that feel natural.'
-          : 'Organize mode off. Start the flight test to compare.'
-      );
-    }
-
-    function resetClutter() {
-      populateControls();
-      setLog('Controls scattered. Try reorganizing them to reduce searching time.');
-      setMetrics({ latest: '—', avg: '—', err: 0 });
-      errors = 0;
-      times = [];
-      testActive = false;
-      startBtn.disabled = false;
-    }
-
-    function handleMouseDown(e) {
-      const target = e.target.closest('.control');
-      if (!target || !organizeMode) return;
-      dragging = target;
-      const rect = target.getBoundingClientRect();
-      offset.x = e.clientX - rect.left;
-      offset.y = e.clientY - rect.top;
-      target.style.cursor = 'grabbing';
-    }
-
-    function handleMouseMove(e) {
-      if (!dragging) return;
-      const bounds = playfield.getBoundingClientRect();
-      let x = e.clientX - bounds.left - offset.x;
-      let y = e.clientY - bounds.top - offset.y;
-      x = Math.max(10, Math.min(bounds.width - dragging.clientWidth - 10, x));
-      y = Math.max(10, Math.min(bounds.height - dragging.clientHeight - 10, y));
-      dragging.style.left = x + 'px';
-      dragging.style.top = y + 'px';
-    }
-
-    function handleMouseUp() {
-      if (dragging) dragging.style.cursor = 'grab';
-      dragging = null;
-    }
-
-    playfield.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-
-    playfield.addEventListener('click', (e) => {
-      const target = e.target.closest('.control');
-      if (!target) return;
-      handleControlClick(target.dataset.key);
-    });
-
-    startBtn.addEventListener('click', startTest);
-    organizeBtn.addEventListener('click', toggleOrganize);
-    resetBtn.addEventListener('click', resetClutter);
-
-    populateControls();
-    setLog(
-      'Arrange controls, then tap "Start flight test". ' +
-      'When the prompt appears, click the highlighted control as fast as you can.'
-    );
-    setMetrics({ latest: '—', avg: '—', err: 0 });
-  </script>
-</body>
-</html>
+ (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
+diff --git a/index.html b/index.html
+index 6a3c5d6159a02384b6b5b400a16901f59b83a9bb..3405c5c535be352a74384f16c0438853a518bf9d 100644
+--- a/index.html
++++ b/index.html
+@@ -1,169 +1,621 @@
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+   <meta charset="utf-8" />
+-  <title>AGU Advances — What Causes Lightning?</title>
++  <title>Cockpit Cleanup Challenge</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1" />
+   <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
+   <style>
+-    :root{
+-      --agu-blue:#003e6b;
+-      --agu-teal:#2e8b9d;
+-      --bg:#f6f7f8;
+-      --card:#ffffff;
+-      --text:#101113;
+-      --muted:#6b6f76;
+-      --border:#e5e7eb;
+-      --link:#005ea5;
+-      --radius:12px;
+-      --content-w:780px;
+-    }
+-    html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+-      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+-      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
+-    a{color:var(--link);text-decoration:none;pointer-events:none}
+-
+-    /* Top header: logo row */
+-    .hdr1{
+-      background:#fff;border-bottom:1px solid var(--border);
+-      display:flex;align-items:center;gap:16px;padding:12px 16px;
+-    }
+-    .agu-lockup{display:flex;align-items:center;gap:12px}
+-    .agu-word{
+-      font-weight:900;font-size:28px;letter-spacing:.5px;color:var(--agu-blue);
+-    }
+-    .agu-sub{
+-      color:var(--agu-blue);font-weight:800;font-size:12px;line-height:1.1;
+-      letter-spacing:.5px;text-transform:uppercase;
+-    }
+-    .search{margin-left:auto;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;min-width:260px;color:#444}
+-    .acct{margin-left:12px;color:var(--link);font-weight:600}
+-
+-    /* Second bar: sections */
+-    .hdr2{
+-      background:var(--agu-blue);color:#fff;border-bottom:1px solid rgba(0,0,0,.06);
+-    }
+-    .hdr2-inner{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px;font-size:14px;opacity:.95}
+-    .hdr2-inner .spacer{flex:1}
+-    .chip{background:#0a5d8a;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:6px 10px;font-size:12px;opacity:.95}
+-
+-    /* Page layout */
+-    .wrap{max-width:1180px;margin:18px auto;display:grid;grid-template-columns:minmax(0,var(--content-w)) 360px;gap:22px;padding:0 16px}
+-    @media (max-width:1000px){.wrap{grid-template-columns:1fr}.sidebar{display:none}}
+-
+-    /* Article header */
+-    .journal{color:var(--agu-blue);font-weight:900;font-size:34px;margin:10px 0 8px}
+-    .meta-top{display:flex;align-items:center;gap:10px;font-size:13px;color:#6b6f76;margin:6px 0 10px}
+-    .pill{background:#eef6ff;color:#0f3f62;border:1px solid #d9e8ff;border-radius:14px;padding:2px 8px;font-weight:700;font-size:12px}
+-    .open{background:#ecfdf5;color:#065f46;border-color:#b7f7df}
+-    .title{font-weight:900;font-size:28px;margin:8px 0 8px}
+-    .authors{font-size:15px;color:#0b3b6f}
+-    .publine{font-size:13px;color:#6b6f76;margin-top:6px}
+-
+-    .bar{display:flex;gap:12px;align-items:center;margin:14px 0 10px}
+-    .btn{display:inline-flex;gap:6px;align-items:center;font-size:14px;border:1px solid var(--border);background:#fff;border-radius:999px;padding:8px 12px;color:#333}
+-    .btn svg{width:18px;height:18px;stroke:#333;fill:none;stroke-width:2}
+-
+-    /* Sections */
+-    .sections{margin:16px 0;font-size:13px;color:#6b6f76;display:flex;align-items:center;gap:8px}
+-    .panel{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px}
+-    .h{font-size:22px;font-weight:900;margin:6px 0 12px}
+-    .abs{line-height:1.7;font-size:16px;white-space:pre-wrap}
+-
+-    /* Sidebar */
+-    .issue-card{
+-      background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;gap:12px;align-items:flex-start;
+-      box-shadow:0 1px 0 rgba(0,0,0,.02);
+-    }
+-    .cover{
+-      width:120px;height:90px;border-radius:6px;border:1px solid var(--border);
+-      background:linear-gradient(180deg,#dbeafe,#c7d2fe);
+-      position:relative;overflow:hidden;flex:0 0 auto;
+-    }
+-    .cover .badge{
+-      position:absolute;top:6px;left:6px;background:#fff;color:#0f3f62;border:1px solid #d9e8ff;border-radius:4px;padding:3px 6px;
+-      font-weight:800;font-size:11px;letter-spacing:.1px;
+-    }
+-    .issue-meta .line1{color:#0f3f62;font-weight:800}
+-    .issue-meta .line2{color:#6b6f76;margin-top:2px}
+-    .issue-meta .line3{color:#6b6f76;margin-top:4px;font-size:13px}
+-
+-    /* Non-interactive cursors */
+-    .btn,.pill,.authors,.publine,.sections,.chip{cursor:default}
++    :root {
++      --ink: #0c0c1c;
++      --panel: #11162b;
++      --panel-2: #161b35;
++      --accent: #6ef3c5;
++      --accent-2: #ffcf58;
++      --alert: #ff6b6b;
++      --grid: rgba(255, 255, 255, 0.06);
++      --text: #f5f8ff;
++      --muted: #8fa4c2;
++      --focus: #4cb3ff;
++      --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
++      --radius: 14px;
++      --pixel: "Press Start 2P", "VT323", "Courier New", monospace;
++    }
++
++    * { box-sizing: border-box; }
++
++    body {
++      margin: 0;
++      min-height: 100vh;
++      background: radial-gradient(circle at 20% 20%, #1a2140, #0b0f20 60%),
++        radial-gradient(circle at 80% 0%, #1d2348, #0b0f20 55%);
++      color: var(--text);
++      font-family: var(--pixel);
++      letter-spacing: 0.4px;
++    }
++
++    h1, h2, h3 { margin: 0; }
++
++    .frame {
++      max-width: 1280px;
++      margin: 0 auto;
++      padding: 20px 18px 28px;
++    }
++
++    .top-bar {
++      background: linear-gradient(135deg, #1b2346, #141a30);
++      border: 2px solid #1f2c52;
++      box-shadow: var(--shadow);
++      border-radius: var(--radius);
++      padding: 18px 18px 14px;
++      display: grid;
++      gap: 12px;
++    }
++
++    .top-bar .title {
++      display: flex;
++      align-items: center;
++      gap: 12px;
++      font-size: 22px;
++    }
++
++    .title .badge {
++      background: var(--accent);
++      color: #062016;
++      padding: 6px 10px;
++      border-radius: 8px;
++      font-size: 12px;
++      box-shadow: 0 3px 0 #2d8d6e;
++    }
++
++    .subtitle {
++      color: var(--muted);
++      font-size: 12px;
++      line-height: 1.6;
++    }
++
++    .layout {
++      display: grid;
++      grid-template-columns: 2fr 1fr;
++      gap: 18px;
++      margin-top: 16px;
++    }
++
++    @media (max-width: 900px) {
++      .layout { grid-template-columns: 1fr; }
++    }
++
++    .cockpit {
++      background: linear-gradient(180deg, #10162e, #0b0f22);
++      border: 2px solid #1f2a4f;
++      border-radius: var(--radius);
++      padding: 16px;
++      box-shadow: var(--shadow);
++      position: relative;
++      overflow: hidden;
++    }
++
++    .cockpit::before {
++      content: "";
++      position: absolute;
++      inset: 0;
++      background-image:
++        linear-gradient(var(--grid) 1px, transparent 1px),
++        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
++      background-size: 40px 40px;
++      pointer-events: none;
++      opacity: 0.6;
++    }
++
++    .cockpit-header {
++      display: flex;
++      justify-content: space-between;
++      align-items: center;
++      position: relative;
++      z-index: 2;
++      margin-bottom: 12px;
++      gap: 10px;
++    }
++
++    .cockpit-header h2 { font-size: 16px; }
++
++    .cockpit-hint {
++      color: var(--muted);
++      font-size: 11px;
++      line-height: 1.4;
++    }
++
++    .instrument-area {
++      position: relative;
++      border: 2px dashed rgba(255, 255, 255, 0.08);
++      border-radius: 12px;
++      min-height: 520px;
++      padding: 10px;
++      overflow: hidden;
++      background: linear-gradient(160deg, rgba(108, 168, 255, 0.08), rgba(78, 242, 197, 0.06));
++    }
++
++    .instrument {
++      position: absolute;
++      width: 170px;
++      min-height: 118px;
++      background: var(--panel);
++      border: 2px solid #2b345d;
++      border-radius: 10px;
++      padding: 10px;
++      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.32);
++      cursor: grab;
++      transition: transform 0.08s ease, border 0.1s ease, box-shadow 0.08s ease;
++      user-select: none;
++    }
++
++    .instrument:active { cursor: grabbing; }
++
++    .instrument h3 {
++      font-size: 12px;
++      display: flex;
++      align-items: center;
++      justify-content: space-between;
++      gap: 8px;
++    }
++
++    .instrument h3 span {
++      background: rgba(255, 255, 255, 0.08);
++      padding: 4px 6px;
++      border-radius: 6px;
++      font-size: 10px;
++      color: var(--muted);
++    }
++
++    .instrument .readout {
++      font-size: 24px;
++      margin: 10px 0 6px;
++      color: var(--accent-2);
++      text-shadow: 0 0 6px rgba(255, 207, 88, 0.4);
++    }
++
++    .instrument .notes {
++      font-size: 10px;
++      color: var(--muted);
++      line-height: 1.5;
++    }
++
++    .instrument.alert {
++      border-color: var(--alert);
++      box-shadow: 0 0 14px rgba(255, 107, 107, 0.6);
++      animation: pulse 0.6s infinite;
++    }
++
++    .instrument.focused {
++      border-color: var(--focus);
++      box-shadow: 0 0 14px rgba(76, 179, 255, 0.7);
++    }
++
++    @keyframes pulse {
++      0%, 100% { transform: translateY(0); }
++      50% { transform: translateY(-2px); }
++    }
++
++    .focus-zone {
++      position: absolute;
++      bottom: 12px;
++      left: 50%;
++      transform: translateX(-50%);
++      width: 82%;
++      min-height: 120px;
++      border: 2px dashed var(--focus);
++      border-radius: 10px;
++      color: var(--focus);
++      display: grid;
++      place-items: center;
++      text-align: center;
++      padding: 12px;
++      background: rgba(76, 179, 255, 0.07);
++      z-index: 1;
++      pointer-events: none;
++      font-size: 11px;
++    }
++
++    .control-panel {
++      background: linear-gradient(180deg, #141a31, #0e1428);
++      border: 2px solid #1f2c52;
++      border-radius: var(--radius);
++      padding: 16px;
++      box-shadow: var(--shadow);
++      display: grid;
++      gap: 14px;
++      align-content: start;
++    }
++
++    .panel {
++      background: rgba(255, 255, 255, 0.02);
++      border: 1px solid rgba(255, 255, 255, 0.06);
++      border-radius: 10px;
++      padding: 12px;
++      display: grid;
++      gap: 8px;
++    }
++
++    .panel h3 { font-size: 13px; }
++
++    .meters { display: grid; gap: 10px; }
++
++    .meter {
++      display: grid;
++      gap: 6px;
++      font-size: 11px;
++      color: var(--muted);
++    }
++
++    .meter-bar {
++      position: relative;
++      width: 100%;
++      height: 14px;
++      background: #101733;
++      border: 1px solid #2c3863;
++      border-radius: 6px;
++      overflow: hidden;
++    }
++
++    .meter-bar .fill {
++      position: absolute;
++      inset: 0;
++      background: linear-gradient(90deg, #38ef7d, #11998e);
++      width: 50%;
++      transition: width 0.25s ease;
++    }
++
++    .meter-bar .fill.caution { background: linear-gradient(90deg, #ffcf58, #ff8a00); }
++    .meter-bar .fill.alert { background: linear-gradient(90deg, #ff6b6b, #c44536); }
++
++    .controls { display: flex; flex-wrap: wrap; gap: 8px; }
++
++    button {
++      font-family: var(--pixel);
++      font-size: 11px;
++      background: var(--accent);
++      color: #062016;
++      border: 2px solid #1d8b66;
++      border-radius: 8px;
++      padding: 10px 12px;
++      cursor: pointer;
++      box-shadow: 0 5px 0 #166a4f;
++      transition: transform 0.08s ease, box-shadow 0.08s ease;
++    }
++
++    button.secondary {
++      background: #4cb3ff;
++      color: #041425;
++      border-color: #2b7bb3;
++      box-shadow: 0 5px 0 #1f5d8a;
++    }
++
++    button:active {
++      transform: translateY(2px);
++      box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
++    }
++
++    .event-log {
++      max-height: 220px;
++      overflow-y: auto;
++      background: #0b0f23;
++      border: 1px solid #1d2647;
++      border-radius: 8px;
++      padding: 10px;
++      font-size: 11px;
++      color: var(--muted);
++      line-height: 1.6;
++    }
++
++    .log-entry { margin-bottom: 6px; }
++    .log-entry strong { color: var(--accent-2); }
++
++    .notes-list { margin: 0; padding-left: 16px; color: var(--muted); font-size: 11px; line-height: 1.6; }
++
++    .hint {
++      font-size: 11px;
++      color: var(--muted);
++      background: rgba(255, 255, 255, 0.04);
++      padding: 8px;
++      border-radius: 8px;
++      border: 1px dashed rgba(255, 255, 255, 0.12);
++      line-height: 1.5;
++    }
+   </style>
+ </head>
+ <body>
+-  <!-- Top header -->
+-  <div class="hdr1">
+-    <div class="agu-lockup">
+-      <div class="agu-word">AGU</div>
+-      <div class="agu-sub">ADVANCING<br/>EARTH AND SPACE SCIENCES</div>
+-    </div>
+-    <div class="search">Search</div>
+-    <div class="acct">Login / Register</div>
+-  </div>
+-  <div class="hdr2">
+-    <div class="hdr2-inner">
+-      <div>JOURNALS</div><div>TOPICS</div><div>OTHER PUBLICATIONS</div><div>POLICIES</div>
+-      <div class="spacer"></div>
+-      <div class="chip">Membership</div>
+-      <div class="chip">AGU.org</div>
+-    </div>
+-  </div>
+-
+-  <main class="wrap">
+-    <!-- Article column -->
+-    <article>
+-      <div class="journal">AGU Advances</div>
+-
+-      <div class="meta-top">
+-        <span class="pill">Research Article</span>
+-        <span class="pill open">Open Access</span>
++  <div class="frame">
++    <header class="top-bar">
++      <div class="title">
++        <div class="badge">8-BIT LAB</div>
++        <h1>Cockpit Cleanup Challenge</h1>
+       </div>
+-
+-      <h1 class="title">What Causes Lightning?</h1>
+-
+-      <div class="authors">Dr. Luisa Mora</div>
+-      <div class="publine">First published: 25 August 2025  |  https://doi.org/10.1029/2025AV001999</div>
+-
+-      <div class="bar">
+-        <span class="btn" title="PDF">
+-          <svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
+-          PDF
+-        </span>
+-        <span class="btn" title="Tools">
+-          <svg viewBox="0 0 24 24"><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+-          Tools
+-        </span>
+-        <span class="btn" title="Share">
+-          <svg viewBox="0 0 24 24"><path d="M4 12l8-8 8 8"/><path d="M12 4v16"/></svg>
+-          Share
+-        </span>
++      <div class="subtitle">
++        Drag and drop instruments, respond to alerts, and test whether a tidier cockpit helps you fly smoother.
++        This mini-game is built for middle school pilots to explore human factors: clutter, attention, and smart layout choices.
+       </div>
++    </header>
+ 
+-      <div class="sections">SECTIONS</div>
+-
+-      <section class="panel">
+-        <div class="h">Abstract</div>
+-        <div class="abs">
+-Within thunderclouds, turbulence is caused by air updrafts, and tiny ice crystals and water droplets are made to collide. During these collisions, a positive charge is acquired by smaller particles, but larger ones are given a negative charge. In a cloud, smaller particles are lifted, while larger ones are pulled downward. As a result of this, opposite charges are separated, and an enormous electrical potential is created. In a thunderstorm, electricity is discharged between cloud regions, and a similar release is observed between the cloud and Earth’s surface. Among lightning strikes, only a quarter are directed toward the ground, and most are retained within clouds. With the use of satellite detectors, lightning activity was mapped globally, and new insights were gained by researchers. According to satellite data, the most lightning is recorded in Central Africa, because storm formation is enhanced by ocean winds and elevated terrain. In the United States, frequent lightning is reported in Florida, where sea breezes from both coasts are pushed inland and forced to converge. At their collision point, warm air is forced upward, so thunderstorms are triggered and intensified. Across seasons, lightning intensity is observed to vary, and distinctive global patterns are revealed. In North America, wildfires are often ignited by lightning in summer, but in South America, damp conditions prevent such fires from spreading. Over oceanic areas, lightning is rarely observed, because water warms more slowly than land and less convection is generated. On some Pacific islands, lightning is seen so rarely that no local word exists for it, and cultural references to it are absent. Through lightning research, forecasting is improved, and deadly storms can be predicted more effectively in advance.
++    <div class="layout">
++      <section class="cockpit">
++        <div class="cockpit-header">
++          <div>
++            <h2>Flight Deck Sandbox</h2>
++            <div class="cockpit-hint">Move critical gauges closer together. Tap flashing panels fast to keep your crew score high.</div>
++          </div>
++          <div class="cockpit-hint">Tip: Cluster altitude, attitude, and airspeed inside the focus zone.</div>
+         </div>
++        <div class="instrument-area" id="instrument-area"></div>
++        <div class="focus-zone" id="focus-zone">Focus Zone — tighter grouping = faster reactions</div>
+       </section>
+-    </article>
+ 
+-    <!-- Sidebar -->
+-    <aside class="sidebar">
+-      <div class="issue-card">
+-        <div class="cover">
+-          <div class="badge">AGU Advances</div>
++      <aside class="control-panel">
++        <div class="panel">
++          <h3>Mission Status</h3>
++          <div class="meters">
++            <div class="meter">
++              <div>Situational Awareness</div>
++              <div class="meter-bar"><div class="fill" id="awareness-bar"></div></div>
++            </div>
++            <div class="meter">
++              <div>Clutter Level</div>
++              <div class="meter-bar"><div class="fill caution" id="clutter-bar"></div></div>
++            </div>
++            <div class="meter">
++              <div>Fatigue</div>
++              <div class="meter-bar"><div class="fill alert" id="fatigue-bar"></div></div>
++            </div>
++          </div>
+         </div>
+-        <div class="issue-meta">
+-          <div class="line1">Volume 6, Issue 4</div>
+-          <div class="line2">August 2025</div>
+-          <div class="line3">e2025AV001999</div>
++
++        <div class="panel">
++          <h3>Controls</h3>
++          <div class="controls">
++            <button id="start-btn">Start Simulation</button>
++            <button id="stop-btn" class="secondary">Pause</button>
++            <button id="shuffle-btn" class="secondary">Shuffle Clutter</button>
++            <button id="reset-btn">Reset Layout</button>
++          </div>
++          <div class="hint">When alerts flash red, click that instrument quickly. Try flying once with clutter, then once after organizing.</div>
+         </div>
+-      </div>
+-    </aside>
+-  </main>
++
++        <div class="panel">
++          <h3>Design Notebook</h3>
++          <ul class="notes-list">
++            <li>Which gauges belong closest together?</li>
++            <li>How many clicks did clutter cost you?</li>
++            <li>Write a rule that would help a real pilot.</li>
++            <li>Sketch your best cockpit on paper after each round.</li>
++          </ul>
++        </div>
++
++        <div class="panel">
++          <h3>Event Log</h3>
++          <div class="event-log" id="event-log"></div>
++        </div>
++      </aside>
++    </div>
++  </div>
++
++  <script>
++    const instrumentArea = document.getElementById('instrument-area');
++    const focusZone = document.getElementById('focus-zone');
++    const logEl = document.getElementById('event-log');
++    const awarenessBar = document.getElementById('awareness-bar');
++    const clutterBar = document.getElementById('clutter-bar');
++    const fatigueBar = document.getElementById('fatigue-bar');
++
++    const instruments = [
++      { id: 'altimeter', label: 'Altimeter', readout: '12,300 ft', note: 'Altitude & pressure monitor.' },
++      { id: 'attitude', label: 'Attitude', readout: 'Level — 2° up', note: 'Artificial horizon.' },
++      { id: 'airspeed', label: 'Airspeed', readout: '245 kts', note: 'Pitch for speed before power.' },
++      { id: 'heading', label: 'Heading', readout: '095°', note: 'Stay on course or drift east.' },
++      { id: 'engine', label: 'Engine', readout: '92% thrust', note: 'Check temps & fuel flow.' },
++      { id: 'radar', label: 'Weather Radar', readout: 'Cells NE', note: 'Storms clutter the map.' },
++      { id: 'nav', label: 'Nav Radios', readout: 'VOR 114.3', note: 'Needle centers when tuned.' },
++      { id: 'checklist', label: 'Checklist', readout: 'Approach', note: 'Tap to verify steps.' },
++      { id: 'alert', label: 'Caution Lights', readout: 'No alerts', note: 'Blink = scan & respond.' }
++    ];
++
++    const state = {
++      running: false,
++      activeAlert: null,
++      metrics: { awareness: 65, clutter: 65, fatigue: 20 },
++      layout: {},
++      timers: { events: null, fatigue: null },
++    };
++
++    function log(message, highlight) {
++      const entry = document.createElement('div');
++      entry.className = 'log-entry';
++      entry.innerHTML = highlight ? `<strong>${message}</strong>` : message;
++      logEl.prepend(entry);
++      while (logEl.children.length > 20) logEl.removeChild(logEl.lastChild);
++    }
++
++    function randomPosition() {
++      const areaRect = instrumentArea.getBoundingClientRect();
++      const width = 170;
++      const height = 120;
++      const padding = 10;
++      const x = Math.random() * (areaRect.width - width - padding * 2) + padding;
++      const y = Math.random() * (areaRect.height - height - padding * 2) + padding;
++      return { x, y };
++    }
++
++    function createInstrument(inst) {
++      const el = document.createElement('div');
++      el.className = 'instrument';
++      el.draggable = true;
++      el.dataset.id = inst.id;
++      el.innerHTML = `
++        <h3>${inst.label} <span>drag</span></h3>
++        <div class="readout">${inst.readout}</div>
++        <div class="notes">${inst.note}</div>
++      `;
++
++      el.addEventListener('dragstart', (e) => {
++        e.dataTransfer.setData('text/plain', inst.id);
++        const rect = el.getBoundingClientRect();
++        el.dataset.offsetX = e.clientX - rect.left;
++        el.dataset.offsetY = e.clientY - rect.top;
++      });
++
++      el.addEventListener('dragend', (e) => {
++        const offsetX = Number(el.dataset.offsetX || 0);
++        const offsetY = Number(el.dataset.offsetY || 0);
++        const areaRect = instrumentArea.getBoundingClientRect();
++        const newX = Math.min(Math.max(e.clientX - areaRect.left - offsetX, 4), areaRect.width - el.offsetWidth - 4);
++        const newY = Math.min(Math.max(e.clientY - areaRect.top - offsetY, 4), areaRect.height - el.offsetHeight - 4);
++        setPosition(el, { x: newX, y: newY });
++        updateFocusFlag(el);
++        scoreClutter();
++      });
++
++      el.addEventListener('click', () => {
++        if (state.activeAlert && state.activeAlert.id === inst.id) {
++          resolveAlert(inst.id, 'Acknowledged');
++        }
++      });
++
++      instrumentArea.appendChild(el);
++      const pos = randomPosition();
++      setPosition(el, pos);
++      state.layout[inst.id] = pos;
++    }
++
++    function setPosition(el, pos) {
++      el.style.left = `${pos.x}px`;
++      el.style.top = `${pos.y}px`;
++      state.layout[el.dataset.id] = pos;
++    }
++
++    function resetLayout() {
++      Array.from(document.querySelectorAll('.instrument')).forEach((el) => {
++        const pos = randomPosition();
++        setPosition(el, pos);
++        el.classList.remove('focused');
++      });
++      scoreClutter();
++      log('Layout reset — start testing new ideas!');
++    }
++
++    function shuffleClutter() {
++      Array.from(document.querySelectorAll('.instrument')).forEach((el) => {
++        const pos = randomPosition();
++        setPosition(el, pos);
++      });
++      scoreClutter();
++      log('We scattered the gauges. Try organizing them.');
++    }
++
++    function isInsideFocus(el) {
++      const focusRect = focusZone.getBoundingClientRect();
++      const instRect = el.getBoundingClientRect();
++      return (
++        instRect.left >= focusRect.left &&
++        instRect.right <= focusRect.right &&
++        instRect.top >= focusRect.top &&
++        instRect.bottom <= focusRect.bottom
++      );
++    }
++
++    function updateFocusFlag(el) {
++      const inside = isInsideFocus(el);
++      el.classList.toggle('focused', inside);
++    }
++
++    function scoreClutter() {
++      const all = Array.from(document.querySelectorAll('.instrument'));
++      const focused = all.filter(isInsideFocus);
++      const focusScore = Math.min(100, 45 + focused.length * 8);
++      const clutterScore = Math.max(20, 90 - focused.length * 10 - all.length);
++      const fatigueScore = Math.min(100, state.metrics.fatigue + (all.length - focused.length));
++
++      state.metrics.awareness = focusScore;
++      state.metrics.clutter = clutterScore;
++      state.metrics.fatigue = fatigueScore;
++      renderMeters();
++    }
++
++    function renderMeters() {
++      awarenessBar.style.width = `${state.metrics.awareness}%`;
++      clutterBar.style.width = `${state.metrics.clutter}%`;
++      fatigueBar.style.width = `${state.metrics.fatigue}%`;
++    }
++
++    function triggerAlert() {
++      if (!state.running) return;
++      const available = instruments.filter((i) => !state.activeAlert || state.activeAlert.id !== i.id);
++      const inst = available[Math.floor(Math.random() * available.length)];
++      const el = document.querySelector(`[data-id="${inst.id}"]`);
++      state.activeAlert = { id: inst.id, started: performance.now() };
++      el.classList.add('alert');
++      el.querySelector('.notes').textContent = 'Alert: confirm and clear!';
++      log(`${inst.label} flashing — click to clear.`);
++
++      setTimeout(() => {
++        if (state.activeAlert && state.activeAlert.id === inst.id) {
++          resolveAlert(inst.id, 'Missed');
++        }
++      }, 5000);
++    }
++
++    function resolveAlert(id, result) {
++      const el = document.querySelector(`[data-id="${id}"]`);
++      if (!el) return;
++      el.classList.remove('alert');
++      el.querySelector('.notes').textContent = instruments.find((i) => i.id === id).note;
++
++      if (result === 'Acknowledged') {
++        const responseTime = Math.max(0, performance.now() - state.activeAlert.started);
++        const focusBonus = isInsideFocus(el) ? 8 : 0;
++        const speedScore = Math.max(5, 25 - responseTime / 400);
++        state.metrics.awareness = Math.min(100, state.metrics.awareness + speedScore + focusBonus);
++        state.metrics.clutter = Math.max(5, state.metrics.clutter - (speedScore / 2 + focusBonus));
++        state.metrics.fatigue = Math.max(0, state.metrics.fatigue - (focusBonus / 2));
++        log(`Cleared ${el.dataset.id} in ${(responseTime / 1000).toFixed(1)}s — nice!`, true);
++      } else {
++        state.metrics.awareness = Math.max(10, state.metrics.awareness - 8);
++        state.metrics.clutter = Math.min(100, state.metrics.clutter + 8);
++        state.metrics.fatigue = Math.min(100, state.metrics.fatigue + 6);
++        log(`${el.dataset.id} ignored — cockpit felt messy.`, true);
++      }
++
++      state.activeAlert = null;
++      renderMeters();
++    }
++
++    function startSimulation() {
++      if (state.running) return;
++      state.running = true;
++      log('Simulation running — respond to alerts and reorganize.');
++      state.timers.events = setInterval(triggerAlert, 3200);
++      state.timers.fatigue = setInterval(() => {
++        state.metrics.fatigue = Math.min(100, state.metrics.fatigue + 1);
++        renderMeters();
++      }, 1500);
++    }
++
++    function stopSimulation() {
++      state.running = false;
++      clearInterval(state.timers.events);
++      clearInterval(state.timers.fatigue);
++      state.timers = { events: null, fatigue: null };
++      log('Simulation paused.');
++    }
++
++    function init() {
++      instruments.forEach(createInstrument);
++      scoreClutter();
++      instrumentArea.addEventListener('dragover', (e) => e.preventDefault());
++      document.getElementById('start-btn').addEventListener('click', startSimulation);
++      document.getElementById('stop-btn').addEventListener('click', stopSimulation);
++      document.getElementById('shuffle-btn').addEventListener('click', shuffleClutter);
++      document.getElementById('reset-btn').addEventListener('click', resetLayout);
++    }
++
++    init();
++  </script>
+ </body>
+ </html>
+ 
+EOF
+)
