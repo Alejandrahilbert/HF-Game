@@ -1,544 +1,569 @@
-diff --git a/index.html b/index.html
-index 6a3c5d6159a02384b6b5b400a16901f59b83a9bb..c95e2b1e1d287e1634f7a26b28d49aed60b8520c 100644
---- a/index.html
-+++ b/index.html
-@@ -1,169 +1,388 @@
- <!DOCTYPE html>
- <html lang="en">
- <head>
-   <meta charset="utf-8" />
--  <title>AGU Advances — What Causes Lightning?</title>
-   <meta name="viewport" content="width=device-width, initial-scale=1" />
--  <meta http-equiv="Permissions-Policy" content="interest-cohort=()">
-+  <title>Cockpit Cleanup Lab</title>
-   <style>
--    :root{
--      --agu-blue:#003e6b;
--      --agu-teal:#2e8b9d;
--      --bg:#f6f7f8;
--      --card:#ffffff;
--      --text:#101113;
--      --muted:#6b6f76;
--      --border:#e5e7eb;
--      --link:#005ea5;
--      --radius:12px;
--      --content-w:780px;
--    }
--    html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
--      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
--      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;}
--    a{color:var(--link);text-decoration:none;pointer-events:none}
--
--    /* Top header: logo row */
--    .hdr1{
--      background:#fff;border-bottom:1px solid var(--border);
--      display:flex;align-items:center;gap:16px;padding:12px 16px;
--    }
--    .agu-lockup{display:flex;align-items:center;gap:12px}
--    .agu-word{
--      font-weight:900;font-size:28px;letter-spacing:.5px;color:var(--agu-blue);
--    }
--    .agu-sub{
--      color:var(--agu-blue);font-weight:800;font-size:12px;line-height:1.1;
--      letter-spacing:.5px;text-transform:uppercase;
--    }
--    .search{margin-left:auto;background:#fff;border:1px solid var(--border);border-radius:8px;padding:10px 14px;min-width:260px;color:#444}
--    .acct{margin-left:12px;color:var(--link);font-weight:600}
--
--    /* Second bar: sections */
--    .hdr2{
--      background:var(--agu-blue);color:#fff;border-bottom:1px solid rgba(0,0,0,.06);
--    }
--    .hdr2-inner{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px;font-size:14px;opacity:.95}
--    .hdr2-inner .spacer{flex:1}
--    .chip{background:#0a5d8a;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:6px 10px;font-size:12px;opacity:.95}
--
--    /* Page layout */
--    .wrap{max-width:1180px;margin:18px auto;display:grid;grid-template-columns:minmax(0,var(--content-w)) 360px;gap:22px;padding:0 16px}
--    @media (max-width:1000px){.wrap{grid-template-columns:1fr}.sidebar{display:none}}
--
--    /* Article header */
--    .journal{color:var(--agu-blue);font-weight:900;font-size:34px;margin:10px 0 8px}
--    .meta-top{display:flex;align-items:center;gap:10px;font-size:13px;color:#6b6f76;margin:6px 0 10px}
--    .pill{background:#eef6ff;color:#0f3f62;border:1px solid #d9e8ff;border-radius:14px;padding:2px 8px;font-weight:700;font-size:12px}
--    .open{background:#ecfdf5;color:#065f46;border-color:#b7f7df}
--    .title{font-weight:900;font-size:28px;margin:8px 0 8px}
--    .authors{font-size:15px;color:#0b3b6f}
--    .publine{font-size:13px;color:#6b6f76;margin-top:6px}
--
--    .bar{display:flex;gap:12px;align-items:center;margin:14px 0 10px}
--    .btn{display:inline-flex;gap:6px;align-items:center;font-size:14px;border:1px solid var(--border);background:#fff;border-radius:999px;padding:8px 12px;color:#333}
--    .btn svg{width:18px;height:18px;stroke:#333;fill:none;stroke-width:2}
--
--    /* Sections */
--    .sections{margin:16px 0;font-size:13px;color:#6b6f76;display:flex;align-items:center;gap:8px}
--    .panel{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px}
--    .h{font-size:22px;font-weight:900;margin:6px 0 12px}
--    .abs{line-height:1.7;font-size:16px;white-space:pre-wrap}
--
--    /* Sidebar */
--    .issue-card{
--      background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;gap:12px;align-items:flex-start;
--      box-shadow:0 1px 0 rgba(0,0,0,.02);
--    }
--    .cover{
--      width:120px;height:90px;border-radius:6px;border:1px solid var(--border);
--      background:linear-gradient(180deg,#dbeafe,#c7d2fe);
--      position:relative;overflow:hidden;flex:0 0 auto;
--    }
--    .cover .badge{
--      position:absolute;top:6px;left:6px;background:#fff;color:#0f3f62;border:1px solid #d9e8ff;border-radius:4px;padding:3px 6px;
--      font-weight:800;font-size:11px;letter-spacing:.1px;
--    }
--    .issue-meta .line1{color:#0f3f62;font-weight:800}
--    .issue-meta .line2{color:#6b6f76;margin-top:2px}
--    .issue-meta .line3{color:#6b6f76;margin-top:4px;font-size:13px}
--
--    /* Non-interactive cursors */
--    .btn,.pill,.authors,.publine,.sections,.chip{cursor:default}
-+    :root {
-+      --bg: #0d1b2a;
-+      --panel: #1b263b;
-+      --accent: #f08c00;
-+      --glow: #70e000;
-+      --text: #f1f5f9;
-+      --muted: #9aa7b8;
-+      --danger: #ff595e;
-+      --shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
-+      --radius: 12px;
-+      --pixel: 'Press Start 2P', 'Courier New', monospace;
-+    }
-+
-+    @font-face {
-+      font-family: 'Press Start 2P';
-+      font-style: normal;
-+      font-weight: 400;
-+      src: local('Press Start 2P'), url('https://fonts.gstatic.com/s/pressstart2p/v14/e3t4euO8T-267oIAQAu6jDQyK3n1iaQ.woff2') format('woff2');
-+      font-display: swap;
-+    }
-+
-+    * { box-sizing: border-box; }
-+    body {
-+      margin: 0;
-+      min-height: 100vh;
-+      background: radial-gradient(circle at 20% 20%, #102542 0, #0b1628 30%, #050910 100%);
-+      color: var(--text);
-+      font-family: var(--pixel);
-+      letter-spacing: 0.5px;
-+      display: flex;
-+      justify-content: center;
-+      padding: 28px 14px 60px;
-+    }
-+
-+    .shell {
-+      width: 1200px;
-+      background: var(--panel);
-+      border: 3px solid #415a77;
-+      border-radius: var(--radius);
-+      box-shadow: var(--shadow);
-+      padding: 18px;
-+      display: grid;
-+      grid-template-columns: 360px 1fr;
-+      gap: 18px;
-+    }
-+
-+    @media (max-width: 1100px) {
-+      .shell { grid-template-columns: 1fr; }
-+      .scoreboard { order: 2; }
-+      .playfield { order: 1; }
-+    }
-+
-+    h1 {
-+      margin: 0 0 10px;
-+      color: var(--glow);
-+      text-shadow: 0 0 8px rgba(112, 224, 0, 0.5);
-+      font-size: 22px;
-+    }
-+
-+    p { margin: 0 0 12px; line-height: 1.5; color: var(--muted); font-size: 12px; }
-+
-+    .panel {
-+      background: #111826;
-+      border: 2px solid #23324a;
-+      border-radius: var(--radius);
-+      padding: 14px;
-+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.04);
-+    }
-+
-+    .scoreboard .hint { color: #cbd5e1; font-size: 12px; margin-bottom: 10px; }
-+    .metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-+    .metric { background: #162033; border: 2px solid #24334f; padding: 10px; border-radius: 10px; }
-+    .metric .label { color: var(--muted); font-size: 11px; margin-bottom: 6px; }
-+    .metric .value { font-size: 18px; color: #f8fafc; }
-+
-+    .legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-top: 12px; }
-+    .badge { display: inline-flex; align-items: center; gap: 8px; background: #0f192a; border: 2px solid #24334f; padding: 8px 10px; border-radius: 10px; font-size: 11px; }
-+    .dot { width: 12px; height: 12px; border-radius: 3px; }
-+
-+    .controls { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
-+    button {
-+      font-family: var(--pixel);
-+      border: 2px solid #24334f;
-+      background: #0f1a2a;
-+      color: var(--text);
-+      padding: 10px 14px;
-+      border-radius: 10px;
-+      cursor: pointer;
-+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease;
-+      box-shadow: 0 0 0 2px rgba(0,0,0,0.35);
-+      font-size: 11px;
-+    }
-+    button:hover { transform: translateY(-1px); box-shadow: 0 10px 14px rgba(0,0,0,0.3); background: #142139; }
-+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-+    .danger { border-color: var(--danger); color: var(--danger); }
-+
-+    .playfield { position: relative; background: #0a1220; border: 2px dashed #23324a; border-radius: var(--radius); min-height: 620px; overflow: hidden; }
-+    .grid-lines { position: absolute; inset: 0; background-image: linear-gradient(#11253f 1px, transparent 1px), linear-gradient(90deg, #11253f 1px, transparent 1px); background-size: 60px 60px; opacity: 0.4; pointer-events: none; }
-+
-+    .control {
-+      position: absolute;
-+      width: 150px;
-+      background: linear-gradient(180deg, #1f2c43, #0e1626);
-+      border: 2px solid #2f3f5d;
-+      border-radius: 12px;
-+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-+      padding: 12px;
-+      cursor: grab;
-+      user-select: none;
-+      transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
-+    }
-+    .control:active { transform: translateY(1px); }
-+    .control.testing { animation: pulse 1s infinite; border-color: var(--glow); box-shadow: 0 0 0 2px rgba(112,224,0,0.2); }
-+    .control .label { font-size: 11px; color: #e2e8f0; margin-bottom: 6px; }
-+    .control .value { font-size: 16px; color: #fff; text-shadow: 0 0 4px rgba(0,0,0,0.5); }
-+    .control .tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 10px; background: #0c1a2b; border: 1px solid #24334f; padding: 6px 8px; border-radius: 8px; }
-+
-+    .control.altitude { border-color: #8ecae6; }
-+    .control.throttle { border-color: #f08c00; }
-+    .control.heading { border-color: #a78bfa; }
-+    .control.flaps { border-color: #ffb703; }
-+    .control.gear { border-color: #ef476f; }
-+    .control.radio { border-color: #06d6a0; }
-+    .control.fuel { border-color: #ffd166; }
-+    .control.horizon { border-color: #64dfdf; }
-+
-+    @keyframes pulse { 0% { box-shadow: 0 0 0 2px rgba(112,224,0,0.3); } 50% { box-shadow: 0 0 0 8px rgba(112,224,0,0.05); } 100% { box-shadow: 0 0 0 2px rgba(112,224,0,0.3); } }
-+
-+    .status { background: #0f1a2b; border: 2px solid #22314a; border-radius: 10px; padding: 12px; margin-top: 10px; min-height: 92px; font-size: 12px; color: #e2e8f0; }
-+    .status .title { color: var(--glow); margin-bottom: 6px; font-size: 12px; }
-+    .status .log { color: #cbd5e1; line-height: 1.4; white-space: pre-wrap; }
-   </style>
- </head>
- <body>
--  <!-- Top header -->
--  <div class="hdr1">
--    <div class="agu-lockup">
--      <div class="agu-word">AGU</div>
--      <div class="agu-sub">ADVANCING<br/>EARTH AND SPACE SCIENCES</div>
--    </div>
--    <div class="search">Search</div>
--    <div class="acct">Login / Register</div>
--  </div>
--  <div class="hdr2">
--    <div class="hdr2-inner">
--      <div>JOURNALS</div><div>TOPICS</div><div>OTHER PUBLICATIONS</div><div>POLICIES</div>
--      <div class="spacer"></div>
--      <div class="chip">Membership</div>
--      <div class="chip">AGU.org</div>
--    </div>
--  </div>
-+  <div class="shell">
-+    <section class="scoreboard">
-+      <h1>Cockpit Cleanup Lab</h1>
-+      <p>Drag instruments to design a kid-friendly cockpit. Run a flight test to see how quickly you can find the right control before and after you tidy the panel.</p>
- 
--  <main class="wrap">
--    <!-- Article column -->
--    <article>
--      <div class="journal">AGU Advances</div>
-+      <div class="panel">
-+        <div class="hint">Try clustering related controls. Clear grouping is a core human factors principle.</div>
-+        <div class="metrics">
-+          <div class="metric">
-+            <div class="label">Latest test</div>
-+            <div class="value" id="latest-time">—</div>
-+          </div>
-+          <div class="metric">
-+            <div class="label">Best time</div>
-+            <div class="value" id="best-time">—</div>
-+          </div>
-+          <div class="metric">
-+            <div class="label">Avg per step</div>
-+            <div class="value" id="avg-step">—</div>
-+          </div>
-+          <div class="metric">
-+            <div class="label">Errors</div>
-+            <div class="value" id="errors">0</div>
-+          </div>
-+        </div>
-+
-+        <div class="controls">
-+          <button id="start-test">Start flight test</button>
-+          <button id="organize" class="">Organize mode: Off</button>
-+          <button id="reset" class="danger">Reset clutter</button>
-+        </div>
- 
--      <div class="meta-top">
--        <span class="pill">Research Article</span>
--        <span class="pill open">Open Access</span>
-+        <div class="legend">
-+          <div class="badge"><span class="dot" style="background:#8ecae6"></span>Flight data</div>
-+          <div class="badge"><span class="dot" style="background:#f08c00"></span>Power & thrust</div>
-+          <div class="badge"><span class="dot" style="background:#a78bfa"></span>Navigation</div>
-+          <div class="badge"><span class="dot" style="background:#06d6a0"></span>Comms & status</div>
-+        </div>
-       </div>
- 
--      <h1 class="title">What Causes Lightning?</h1>
--
--      <div class="authors">Dr. Luisa Mora</div>
--      <div class="publine">First published: 25 August 2025  |  https://doi.org/10.1029/2025AV001999</div>
--
--      <div class="bar">
--        <span class="btn" title="PDF">
--          <svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>
--          PDF
--        </span>
--        <span class="btn" title="Tools">
--          <svg viewBox="0 0 24 24"><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
--          Tools
--        </span>
--        <span class="btn" title="Share">
--          <svg viewBox="0 0 24 24"><path d="M4 12l8-8 8 8"/><path d="M12 4v16"/></svg>
--          Share
--        </span>
-+      <div class="status">
-+        <div class="title">Mission log</div>
-+        <div class="log" id="log">Arrange controls, then tap "Start flight test". When the prompt appears, click the highlighted control as fast as you can.</div>
-       </div>
-+    </section>
- 
--      <div class="sections">SECTIONS</div>
-+    <section class="playfield">
-+      <div class="grid-lines"></div>
-+    </section>
-+  </div>
- 
--      <section class="panel">
--        <div class="h">Abstract</div>
--        <div class="abs">
--Within thunderclouds, turbulence is caused by air updrafts, and tiny ice crystals and water droplets are made to collide. During these collisions, a positive charge is acquired by smaller particles, but larger ones are given a negative charge. In a cloud, smaller particles are lifted, while larger ones are pulled downward. As a result of this, opposite charges are separated, and an enormous electrical potential is created. In a thunderstorm, electricity is discharged between cloud regions, and a similar release is observed between the cloud and Earth’s surface. Among lightning strikes, only a quarter are directed toward the ground, and most are retained within clouds. With the use of satellite detectors, lightning activity was mapped globally, and new insights were gained by researchers. According to satellite data, the most lightning is recorded in Central Africa, because storm formation is enhanced by ocean winds and elevated terrain. In the United States, frequent lightning is reported in Florida, where sea breezes from both coasts are pushed inland and forced to converge. At their collision point, warm air is forced upward, so thunderstorms are triggered and intensified. Across seasons, lightning intensity is observed to vary, and distinctive global patterns are revealed. In North America, wildfires are often ignited by lightning in summer, but in South America, damp conditions prevent such fires from spreading. Over oceanic areas, lightning is rarely observed, because water warms more slowly than land and less convection is generated. On some Pacific islands, lightning is seen so rarely that no local word exists for it, and cultural references to it are absent. Through lightning research, forecasting is improved, and deadly storms can be predicted more effectively in advance.
--        </div>
--      </section>
--    </article>
--
--    <!-- Sidebar -->
--    <aside class="sidebar">
--      <div class="issue-card">
--        <div class="cover">
--          <div class="badge">AGU Advances</div>
--        </div>
--        <div class="issue-meta">
--          <div class="line1">Volume 6, Issue 4</div>
--          <div class="line2">August 2025</div>
--          <div class="line3">e2025AV001999</div>
--        </div>
--      </div>
--    </aside>
--  </main>
-+  <script>
-+    const playfield = document.querySelector('.playfield');
-+    const logEl = document.getElementById('log');
-+    const latestEl = document.getElementById('latest-time');
-+    const bestEl = document.getElementById('best-time');
-+    const avgEl = document.getElementById('avg-step');
-+    const errorEl = document.getElementById('errors');
-+    const startBtn = document.getElementById('start-test');
-+    const organizeBtn = document.getElementById('organize');
-+    const resetBtn = document.getElementById('reset');
-+
-+    const controls = [
-+      { key: 'altitude', label: 'Altimeter', value: '12,200 ft', tag: 'Flight data', hint: 'Set altitude' },
-+      { key: 'throttle', label: 'Throttle', value: '65% power', tag: 'Power', hint: 'Add thrust' },
-+      { key: 'heading', label: 'Heading', value: '090° east', tag: 'Navigation', hint: 'Turn east' },
-+      { key: 'flaps', label: 'Flaps', value: '10° deployed', tag: 'Lift', hint: 'Flaps 10' },
-+      { key: 'gear', label: 'Landing Gear', value: 'Down & locked', tag: 'Landing', hint: 'Gear down' },
-+      { key: 'radio', label: 'Radio', value: 'Tower: 118.4', tag: 'Comms', hint: 'Call tower' },
-+      { key: 'fuel', label: 'Fuel Gauge', value: '82% remaining', tag: 'Fuel', hint: 'Check fuel' },
-+      { key: 'horizon', label: 'Horizon', value: 'Level flight', tag: 'Attitude', hint: 'Stay level' },
-+    ];
-+
-+    const tasks = [
-+      { key: 'throttle', message: 'Add thrust for takeoff' },
-+      { key: 'heading', message: 'Turn to heading 090°' },
-+      { key: 'altitude', message: 'Check 12,000 ft' },
-+      { key: 'gear', message: 'Gear down for landing' },
-+      { key: 'radio', message: 'Call the tower' },
-+      { key: 'flaps', message: 'Set flaps to 10°' },
-+      { key: 'fuel', message: 'Verify fuel' },
-+      { key: 'horizon', message: 'Confirm level wings' },
-+    ];
-+
-+    let elements = new Map();
-+    let dragging = null;
-+    let offset = { x: 0, y: 0 };
-+    let organizeMode = false;
-+    let currentTaskIndex = 0;
-+    let testActive = false;
-+    let times = [];
-+    let best = null;
-+    let errors = 0;
-+    let taskStart = null;
-+
-+    function randomPosition() {
-+      const padding = 30;
-+      const maxX = playfield.clientWidth - 160;
-+      const maxY = playfield.clientHeight - 180;
-+      return {
-+        x: Math.random() * (maxX - padding) + padding,
-+        y: Math.random() * (maxY - padding) + padding,
-+      };
-+    }
-+
-+    function createControl(ctrl) {
-+      const div = document.createElement('div');
-+      div.className = `control ${ctrl.key}`;
-+      div.dataset.key = ctrl.key;
-+      div.innerHTML = `
-+        <div class="label">${ctrl.label}</div>
-+        <div class="value">${ctrl.value}</div>
-+        <div class="tag">${ctrl.tag}</div>
-+      `;
-+      const pos = randomPosition();
-+      div.style.left = `${pos.x}px`;
-+      div.style.top = `${pos.y}px`;
-+      playfield.appendChild(div);
-+      elements.set(ctrl.key, div);
-+    }
-+
-+    function populateControls() {
-+      playfield.innerHTML = '<div class="grid-lines"></div>';
-+      elements.clear();
-+      controls.forEach(createControl);
-+    }
-+
-+    function setLog(message) { logEl.textContent = message; }
-+    function setMetrics({ latest, avg, err }) {
-+      latestEl.textContent = latest ?? '—';
-+      avgEl.textContent = avg ?? '—';
-+      errorEl.textContent = err ?? errors;
-+      bestEl.textContent = best === null ? '—' : `${best.toFixed(2)}s`;
-+    }
-+
-+    function formatSeconds(ms) { return (ms / 1000).toFixed(2); }
-+
-+    function startTest() {
-+      currentTaskIndex = 0;
-+      times = [];
-+      errors = 0;
-+      testActive = true;
-+      startBtn.disabled = true;
-+      setLog('Flight test running: click the highlighted control that matches each prompt.');
-+      nextTask();
-+    }
-+
-+    function nextTask() {
-+      Array.from(elements.values()).forEach(el => el.classList.remove('testing'));
-+      if (currentTaskIndex >= tasks.length) {
-+        finishTest();
-+        return;
-+      }
-+      const task = tasks[currentTaskIndex];
-+      const el = elements.get(task.key);
-+      if (el) el.classList.add('testing');
-+      setLog(`Task ${currentTaskIndex + 1}/${tasks.length}: ${task.message}`);
-+      taskStart = performance.now();
-+    }
-+
-+    function finishTest() {
-+      testActive = false;
-+      startBtn.disabled = false;
-+      Array.from(elements.values()).forEach(el => el.classList.remove('testing'));
-+      const total = times.reduce((a, b) => a + b, 0);
-+      const avg = times.length ? total / times.length : 0;
-+      best = best === null ? total : Math.min(best, total);
-+      setMetrics({ latest: `${formatSeconds(total)}s`, avg: `${formatSeconds(avg)}s`, err: errors });
-+      setLog(`Flight complete! Total time: ${formatSeconds(total)}s | Avg step: ${formatSeconds(avg)}s | Errors: ${errors}. Try reorganizing the cockpit to beat your time.`);
-+    }
-+
-+    function handleControlClick(key) {
-+      if (!testActive) return;
-+      const task = tasks[currentTaskIndex];
-+      if (task.key === key) {
-+        const elapsed = performance.now() - taskStart;
-+        times.push(elapsed);
-+        currentTaskIndex += 1;
-+        nextTask();
-+      } else {
-+        errors += 1;
-+        errorEl.textContent = errors;
-+        setLog(`Oops, wrong control. We need: ${task.message}`);
-+      }
-+    }
-+
-+    function toggleOrganize() {
-+      organizeMode = !organizeMode;
-+      organizeBtn.textContent = `Organize mode: ${organizeMode ? 'On' : 'Off'}`;
-+      setLog(organizeMode ? 'Drag controls into groups that feel natural.' : 'Organize mode off. Start the flight test to compare.');
-+    }
-+
-+    function resetClutter() {
-+      populateControls();
-+      setLog('Controls scattered. Try reorganizing them to reduce searching time.');
-+      setMetrics({ latest: '—', avg: '—', err: 0 });
-+      errors = 0;
-+      times = [];
-+      testActive = false;
-+      startBtn.disabled = false;
-+    }
-+
-+    function handleMouseDown(e) {
-+      const target = e.target.closest('.control');
-+      if (!target || !organizeMode) return;
-+      dragging = target;
-+      const rect = target.getBoundingClientRect();
-+      offset.x = e.clientX - rect.left;
-+      offset.y = e.clientY - rect.top;
-+      target.style.cursor = 'grabbing';
-+    }
-+
-+    function handleMouseMove(e) {
-+      if (!dragging) return;
-+      const bounds = playfield.getBoundingClientRect();
-+      let x = e.clientX - bounds.left - offset.x;
-+      let y = e.clientY - bounds.top - offset.y;
-+      x = Math.max(10, Math.min(bounds.width - dragging.clientWidth - 10, x));
-+      y = Math.max(10, Math.min(bounds.height - dragging.clientHeight - 10, y));
-+      dragging.style.left = `${x}px`;
-+      dragging.style.top = `${y}px`;
-+    }
-+
-+    function handleMouseUp() {
-+      if (dragging) dragging.style.cursor = 'grab';
-+      dragging = null;
-+    }
-+
-+    playfield.addEventListener('mousedown', handleMouseDown);
-+    window.addEventListener('mousemove', handleMouseMove);
-+    window.addEventListener('mouseup', handleMouseUp);
-+    playfield.addEventListener('click', (e) => {
-+      const target = e.target.closest('.control');
-+      if (!target) return;
-+      handleControlClick(target.dataset.key);
-+    });
-+
-+    startBtn.addEventListener('click', startTest);
-+    organizeBtn.addEventListener('click', toggleOrganize);
-+    resetBtn.addEventListener('click', resetClutter);
-+
-+    populateControls();
-+    setLog('Arrange controls, then tap "Start flight test". When the prompt appears, click the highlighted control as fast as you can.');
-+    setMetrics({ latest: '—', avg: '—', err: 0 });
-+  </script>
- </body>
- </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cockpit Cleanup Lab</title>
+  <style>
+    :root {
+      --bg: #0d1b2a;
+      --panel: #1b263b;
+      --accent: #f08c00;
+      --glow: #70e000;
+      --text: #f1f5f9;
+      --muted: #9aa7b8;
+      --danger: #ff595e;
+      --shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+      --radius: 12px;
+      --pixel: 'Press Start 2P', 'Courier New', monospace;
+    }
+
+    @font-face {
+      font-family: 'Press Start 2P';
+      font-style: normal;
+      font-weight: 400;
+      src: local('Press Start 2P'),
+           url('https://fonts.gstatic.com/s/pressstart2p/v14/e3t4euO8T-267oIAQAu6jDQyK3n1iaQ.woff2')
+             format('woff2');
+      font-display: swap;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 20%, #102542 0, #0b1628 30%, #050910 100%);
+      color: var(--text);
+      font-family: var(--pixel);
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: center;
+      padding: 28px 14px 60px;
+    }
+
+    .shell {
+      width: 1200px;
+      background: var(--panel);
+      border: 3px solid #415a77;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 1100px) {
+      .shell { grid-template-columns: 1fr; }
+      .scoreboard { order: 2; }
+      .playfield { order: 1; }
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      color: var(--glow);
+      text-shadow: 0 0 8px rgba(112, 224, 0, 0.5);
+      font-size: 22px;
+    }
+
+    p {
+      margin: 0 0 12px;
+      line-height: 1.5;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .panel {
+      background: #111826;
+      border: 2px solid #23324a;
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.04);
+    }
+
+    .scoreboard .hint {
+      color: #cbd5e1;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .metric {
+      background: #162033;
+      border: 2px solid #24334f;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+
+    .metric .value {
+      font-size: 18px;
+      color: #f8fafc;
+    }
+
+    .legend {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0f192a;
+      border: 2px solid #24334f;
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    button {
+      font-family: var(--pixel);
+      border: 2px solid #24334f;
+      background: #0f1a2a;
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+      font-size: 11px;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 14px rgba(0, 0, 0, 0.3);
+      background: #142139;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .danger {
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .playfield {
+      position: relative;
+      background: #0a1220;
+      border: 2px dashed #23324a;
+      border-radius: var(--radius);
+      min-height: 620px;
+      overflow: hidden;
+    }
+
+    .grid-lines {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(#11253f 1px, transparent 1px),
+        linear-gradient(90deg, #11253f 1px, transparent 1px);
+      background-size: 60px 60px;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .control {
+      position: absolute;
+      width: 150px;
+      background: linear-gradient(180deg, #1f2c43, #0e1626);
+      border: 2px solid #2f3f5d;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      padding: 12px;
+      cursor: grab;
+      user-select: none;
+      transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .control:active {
+      transform: translateY(1px);
+    }
+
+    .control.testing {
+      animation: pulse 1s infinite;
+      border-color: var(--glow);
+      box-shadow: 0 0 0 2px rgba(112, 224, 0, 0.2);
+    }
+
+    .control .label {
+      font-size: 11px;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+    }
+
+    .control .value {
+      font-size: 16px;
+      color: #fff;
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .control .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 10px;
+      background: #0c1a2b;
+      border: 1px solid #24334f;
+      padding: 6px 8px;
+      border-radius: 8px;
+    }
+
+    .control.altitude { border-color: #8ecae6; }
+    .control.throttle { border-color: #f08c00; }
+    .control.heading { border-color: #a78bfa; }
+    .control.flaps   { border-color: #ffb703; }
+    .control.gear    { border-color: #ef476f; }
+    .control.radio   { border-color: #06d6a0; }
+    .control.fuel    { border-color: #ffd166; }
+    .control.horizon { border-color: #64dfdf; }
+
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 2px rgba(112, 224, 0, 0.3); }
+      50%  { box-shadow: 0 0 0 8px rgba(112, 224, 0, 0.05); }
+      100% { box-shadow: 0 0 0 2px rgba(112, 224, 0, 0.3); }
+    }
+
+    .status {
+      background: #0f1a2b;
+      border: 2px solid #22314a;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 10px;
+      min-height: 92px;
+      font-size: 12px;
+      color: #e2e8f0;
+    }
+
+    .status .title {
+      color: var(--glow);
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .status .log {
+      color: #cbd5e1;
+      line-height: 1.4;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="scoreboard">
+      <h1>Cockpit Cleanup Lab</h1>
+      <p>
+        Drag instruments to design a kid-friendly cockpit. Run a flight test to see
+        how quickly you can find the right control before and after you tidy the panel.
+      </p>
+
+      <div class="panel">
+        <div class="hint">
+          Try clustering related controls. Clear grouping is a core human factors principle.
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <div class="label">Latest test</div>
+            <div class="value" id="latest-time">—</div>
+          </div>
+          <div class="metric">
+            <div class="label">Best time</div>
+            <div class="value" id="best-time">—</div>
+          </div>
+          <div class="metric">
+            <div class="label">Avg per step</div>
+            <div class="value" id="avg-step">—</div>
+          </div>
+          <div class="metric">
+            <div class="label">Errors</div>
+            <div class="value" id="errors">0</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="start-test">Start flight test</button>
+          <button id="organize">Organize mode: Off</button>
+          <button id="reset" class="danger">Reset clutter</button>
+        </div>
+
+        <div class="legend">
+          <div class="badge">
+            <span class="dot" style="background:#8ecae6"></span>Flight data
+          </div>
+          <div class="badge">
+            <span class="dot" style="background:#f08c00"></span>Power &amp; thrust
+          </div>
+          <div class="badge">
+            <span class="dot" style="background:#a78bfa"></span>Navigation
+          </div>
+          <div class="badge">
+            <span class="dot" style="background:#06d6a0"></span>Comms &amp; status
+          </div>
+        </div>
+      </div>
+
+      <div class="status">
+        <div class="title">Mission log</div>
+        <div class="log" id="log">
+          Arrange controls, then tap "Start flight test". When the prompt appears,
+          click the highlighted control as fast as you can.
+        </div>
+      </div>
+    </section>
+
+    <section class="playfield">
+      <div class="grid-lines"></div>
+    </section>
+  </div>
+
+  <script>
+    const playfield = document.querySelector('.playfield');
+    const logEl = document.getElementById('log');
+    const latestEl = document.getElementById('latest-time');
+    const bestEl = document.getElementById('best-time');
+    const avgEl = document.getElementById('avg-step');
+    const errorEl = document.getElementById('errors');
+    const startBtn = document.getElementById('start-test');
+    const organizeBtn = document.getElementById('organize');
+    const resetBtn = document.getElementById('reset');
+
+    const controls = [
+      { key: 'altitude', label: 'Altimeter',    value: '12,200 ft',      tag: 'Flight data' },
+      { key: 'throttle', label: 'Throttle',     value: '65% power',      tag: 'Power' },
+      { key: 'heading',  label: 'Heading',      value: '090° east',      tag: 'Navigation' },
+      { key: 'flaps',    label: 'Flaps',        value: '10° deployed',   tag: 'Lift' },
+      { key: 'gear',     label: 'Landing Gear', value: 'Down & locked',  tag: 'Landing' },
+      { key: 'radio',    label: 'Radio',        value: 'Tower: 118.4',   tag: 'Comms' },
+      { key: 'fuel',     label: 'Fuel Gauge',   value: '82% remaining',  tag: 'Fuel' },
+      { key: 'horizon',  label: 'Horizon',      value: 'Level flight',   tag: 'Attitude' },
+    ];
+
+    const tasks = [
+      { key: 'throttle', message: 'Add thrust for takeoff' },
+      { key: 'heading',  message: 'Turn to heading 090°' },
+      { key: 'altitude', message: 'Check 12,000 ft' },
+      { key: 'gear',     message: 'Gear down for landing' },
+      { key: 'radio',    message: 'Call the tower' },
+      { key: 'flaps',    message: 'Set flaps to 10°' },
+      { key: 'fuel',     message: 'Verify fuel' },
+      { key: 'horizon',  message: 'Confirm level wings' },
+    ];
+
+    let elements = new Map();
+    let dragging = null;
+    let offset = { x: 0, y: 0 };
+    let organizeMode = false;
+    let currentTaskIndex = 0;
+    let testActive = false;
+    let times = [];
+    let best = null;
+    let errors = 0;
+    let taskStart = null;
+
+    function randomPosition() {
+      const padding = 30;
+      const maxX = playfield.clientWidth - 160;
+      const maxY = playfield.clientHeight - 180;
+      return {
+        x: Math.random() * (maxX - padding) + padding,
+        y: Math.random() * (maxY - padding) + padding,
+      };
+    }
+
+    function createControl(ctrl) {
+      const div = document.createElement('div');
+      div.className = 'control ' + ctrl.key;
+      div.dataset.key = ctrl.key;
+      div.innerHTML = `
+        <div class="label">${ctrl.label}</div>
+        <div class="value">${ctrl.value}</div>
+        <div class="tag">${ctrl.tag}</div>
+      `;
+      const pos = randomPosition();
+      div.style.left = pos.x + 'px';
+      div.style.top = pos.y + 'px';
+      playfield.appendChild(div);
+      elements.set(ctrl.key, div);
+    }
+
+    function populateControls() {
+      playfield.innerHTML = '<div class="grid-lines"></div>';
+      elements.clear();
+      controls.forEach(createControl);
+    }
+
+    function setLog(message) {
+      logEl.textContent = message;
+    }
+
+    function setMetrics({ latest, avg, err }) {
+      latestEl.textContent = latest ?? '—';
+      avgEl.textContent = avg ?? '—';
+      errorEl.textContent = err ?? errors;
+      bestEl.textContent = best === null ? '—' : best.toFixed(2) + 's';
+    }
+
+    function formatSeconds(ms) {
+      return (ms / 1000).toFixed(2);
+    }
+
+    function startTest() {
+      currentTaskIndex = 0;
+      times = [];
+      errors = 0;
+      testActive = true;
+      startBtn.disabled = true;
+      setLog('Flight test running: click the highlighted control that matches each prompt.');
+      nextTask();
+    }
+
+    function nextTask() {
+      Array.from(elements.values()).forEach(el => el.classList.remove('testing'));
+      if (currentTaskIndex >= tasks.length) {
+        finishTest();
+        return;
+      }
+      const task = tasks[currentTaskIndex];
+      const el = elements.get(task.key);
+      if (el) el.classList.add('testing');
+      setLog('Task ' + (currentTaskIndex + 1) + '/' + tasks.length + ': ' + task.message);
+      taskStart = performance.now();
+    }
+
+    function finishTest() {
+      testActive = false;
+      startBtn.disabled = false;
+      Array.from(elements.values()).forEach(el => el.classList.remove('testing'));
+      const total = times.reduce((a, b) => a + b, 0);
+      const avg = times.length ? total / times.length : 0;
+      best = best === null ? total : Math.min(best, total);
+      setMetrics({
+        latest: formatSeconds(total) + 's',
+        avg: formatSeconds(avg) + 's',
+        err: errors
+      });
+      setLog(
+        'Flight complete! Total time: ' + formatSeconds(total) +
+        's | Avg step: ' + formatSeconds(avg) +
+        's | Errors: ' + errors +
+        '. Try reorganizing the cockpit to beat your time.'
+      );
+    }
+
+    function handleControlClick(key) {
+      if (!testActive) return;
+      const task = tasks[currentTaskIndex];
+      if (task.key === key) {
+        const elapsed = performance.now() - taskStart;
+        times.push(elapsed);
+        currentTaskIndex += 1;
+        nextTask();
+      } else {
+        errors += 1;
+        errorEl.textContent = errors;
+        setLog('Oops, wrong control. We need: ' + task.message);
+      }
+    }
+
+    function toggleOrganize() {
+      organizeMode = !organizeMode;
+      organizeBtn.textContent = 'Organize mode: ' + (organizeMode ? 'On' : 'Off');
+      setLog(
+        organizeMode
+          ? 'Drag controls into groups that feel natural.'
+          : 'Organize mode off. Start the flight test to compare.'
+      );
+    }
+
+    function resetClutter() {
+      populateControls();
+      setLog('Controls scattered. Try reorganizing them to reduce searching time.');
+      setMetrics({ latest: '—', avg: '—', err: 0 });
+      errors = 0;
+      times = [];
+      testActive = false;
+      startBtn.disabled = false;
+    }
+
+    function handleMouseDown(e) {
+      const target = e.target.closest('.control');
+      if (!target || !organizeMode) return;
+      dragging = target;
+      const rect = target.getBoundingClientRect();
+      offset.x = e.clientX - rect.left;
+      offset.y = e.clientY - rect.top;
+      target.style.cursor = 'grabbing';
+    }
+
+    function handleMouseMove(e) {
+      if (!dragging) return;
+      const bounds = playfield.getBoundingClientRect();
+      let x = e.clientX - bounds.left - offset.x;
+      let y = e.clientY - bounds.top - offset.y;
+      x = Math.max(10, Math.min(bounds.width - dragging.clientWidth - 10, x));
+      y = Math.max(10, Math.min(bounds.height - dragging.clientHeight - 10, y));
+      dragging.style.left = x + 'px';
+      dragging.style.top = y + 'px';
+    }
+
+    function handleMouseUp() {
+      if (dragging) dragging.style.cursor = 'grab';
+      dragging = null;
+    }
+
+    playfield.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+
+    playfield.addEventListener('click', (e) => {
+      const target = e.target.closest('.control');
+      if (!target) return;
+      handleControlClick(target.dataset.key);
+    });
+
+    startBtn.addEventListener('click', startTest);
+    organizeBtn.addEventListener('click', toggleOrganize);
+    resetBtn.addEventListener('click', resetClutter);
+
+    populateControls();
+    setLog(
+      'Arrange controls, then tap "Start flight test". ' +
+      'When the prompt appears, click the highlighted control as fast as you can.'
+    );
+    setMetrics({ latest: '—', avg: '—', err: 0 });
+  </script>
+</body>
+</html>
